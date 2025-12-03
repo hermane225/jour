@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jour-de-marche-api
+  labels:
+    app: jour-de-marche-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: jour-de-marche-api
+  template:
+    metadata:
+      labels:
+        app: jour-de-marche-api
+    spec:
+      containers:
+      - name: api
+        image: jour-de-marche-api:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: jour-de-marche-secrets
+              key: mongodb-uri
+        - name: REDIS_HOST
+          value: "redis-service"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

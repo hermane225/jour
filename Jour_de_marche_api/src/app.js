@@ -1,0 +1,76 @@
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const config = require('../config');
+const logger = require('../config/logger');
+const { swaggerUi, swaggerSpec } = require('./docs/swagger');
+
+// Import middlewares
+const { rateLimiter } = require('./middlewares/rateLimiter');
+const errorMiddleware = require('./middlewares/error.middleware');
+
+// Import routes
+const apiRoutes = require('./api/index.routes');
+
+const app = express();
+
+// =====================
+// Global Middlewares
+// =====================
+
+// Security headers
+app.use(helmet());
+
+// CORS
+app.use(cors({
+  origin: config.cors.origins,
+  credentials: true,
+  optionsSuccessStatus: 200,
+}));
+
+// Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Body parser
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Logging
+app.use(morgan('combined', {
+  stream: {
+    write: (message) => logger.info(message),
+  },
+}));
+
+// Rate limiting
+app.use(rateLimiter);
+
+// =====================
+// Routes
+// =====================
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date(),
+    uptime: process.uptime(),
+  });
+});
+
+// API routes
+app.use('/api', apiRoutes);
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route non trouvée',
+  });
+});
+
+// Error handling middleware
+app.use(errorMiddleware);
+
+module.exports = app;

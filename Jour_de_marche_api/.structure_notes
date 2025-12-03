@@ -1,0 +1,28 @@
+# Fichiers placeholder pour les autres modules
+
+# Ces fichiers seront implémentés au besoin:
+
+## /orders
+- orders.routes.js
+- orders.controller.js
+- orders.validator.js
+
+## /payments
+- payments.routes.js
+- payments.controller.js
+- /mock-provider/
+  - provider.routes.js
+  - provider.controller.js
+
+## /drivers
+- drivers.routes.js
+- drivers.controller.js
+- drivers.validator.js
+
+## /uploads
+- uploads.routes.js
+- uploads.controller.js
+
+## /admin
+- admin.routes.js
+- admin.controller.js

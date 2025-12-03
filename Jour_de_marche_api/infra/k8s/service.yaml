@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jour-de-marche-api-service
+  labels:
+    app: jour-de-marche-api
+spec:
+  type: LoadBalancer
+  selector:
+    app: jour-de-marche-api
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000

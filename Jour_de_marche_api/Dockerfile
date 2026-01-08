@@ -1,11 +1,14 @@
 # Build stage
 FROM node:18-alpine AS builder
+
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm install --only=production
+
+COPY package*.json ./
+RUN npm ci --only=production
 
 # Runtime stage
 FROM node:18-alpine
+
 WORKDIR /app
 
 # Install dumb-init to handle signals properly
@@ -21,6 +24,7 @@ COPY . .
 RUN mkdir -p uploads && chown -R node:node /app
 
 USER node
+
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

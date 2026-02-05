@@ -4,7 +4,7 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 COPY Jour_de_marche_api/package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Runtime stage
 FROM node:18-alpine

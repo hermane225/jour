@@ -32,9 +32,9 @@ coverage/
 .nyc_output/
 *.lcov
 
-# Uploads
-uploads/
-!uploads/.gitkeep
+# Uploads (only root uploads folder, not src/api/uploads)
+/uploads/
+!/uploads/.gitkeep
 
 # OS
 .DS_Store

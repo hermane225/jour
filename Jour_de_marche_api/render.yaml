@@ -12,6 +12,7 @@ services:
     runtime: node
     region: frankfurt
     plan: free
+    rootDirectory: Jour_de_marche_api
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /health

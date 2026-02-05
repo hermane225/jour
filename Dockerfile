@@ -3,7 +3,7 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY Jour_de_marche_api/package*.json ./
 RUN npm ci --only=production
 
 # Runtime stage
@@ -18,7 +18,7 @@ RUN apk add --no-cache dumb-init
 COPY --from=builder /app/node_modules ./node_modules
 
 # Copy application code
-COPY . .
+COPY Jour_de_marche_api .
 
 # Create uploads directory
 RUN mkdir -p uploads && chown -R node:node /app

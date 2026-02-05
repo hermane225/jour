@@ -4,9 +4,26 @@ const logger = require('../../config/logger');
 
 const queues = {};
 
+// Extraire la configuration Redis depuis l'URL pour Bull
+const getRedisConfig = () => {
+  const redisUrl = config.bull.redisUrl;
+  
+  // Si l'URL commence par rediss://, c'est une connexion TLS (Upstash)
+  if (redisUrl.startsWith('rediss://')) {
+    return {
+      redis: {
+        tls: {},
+      },
+    };
+  }
+  
+  return {};
+};
+
 const initializeQueue = (queueName) => {
   if (!queues[queueName]) {
-    queues[queueName] = new Queue(queueName, config.bull.redisUrl);
+    const redisConfig = getRedisConfig();
+    queues[queueName] = new Queue(queueName, config.bull.redisUrl, redisConfig);
 
     queues[queueName].on('error', (error) => {
       logger.error(`❌ Erreur queue ${queueName}:`, error.message);

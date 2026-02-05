@@ -1,0 +1,62 @@
+# render.yaml - Configuration de déploiement Render (TEST GRATUIT)
+# Documentation: https://render.com/docs/blueprint-spec
+#
+# SERVICES GRATUITS À CONFIGURER :
+# 1. MongoDB Atlas : https://mongodb.com/atlas (gratuit M0)
+# 2. Upstash Redis : https://upstash.com (gratuit 10k req/jour)
+
+services:
+  # API Node.js - GRATUIT
+  - type: web
+    name: jour-de-marche-api
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_EXPIRY
+        value: 7d
+      - key: JWT_REFRESH_EXPIRY
+        value: 30d
+      # MongoDB Atlas - À CONFIGURER MANUELLEMENT
+      - key: MONGODB_URI
+        sync: false
+      # Upstash Redis - À CONFIGURER MANUELLEMENT  
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        value: 6379
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: REDIS_TLS
+        value: "true"
+      - key: USE_REDIS
+        value: "true"
+      - key: BULL_REDIS_URL
+        sync: false
+      # Configuration par défaut pour test
+      - key: STORAGE_TYPE
+        value: local
+      - key: LOG_LEVEL
+        value: info
+      - key: LOG_FORMAT
+        value: json
+      - key: GEOCODER_PROVIDER
+        value: nominatim
+      - key: PAYMENT_PROVIDER
+        value: mock
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 1000
+    autoDeploy: true

@@ -22,9 +22,11 @@ const config = {
   // Redis
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
-    port: process.env.REDIS_PORT || 6379,
+    port: parseInt(process.env.REDIS_PORT) || 6379,
     password: process.env.REDIS_PASSWORD,
     db: 0,
+    tls: process.env.REDIS_TLS === 'true',
+    enabled: process.env.USE_REDIS === 'true',
   },
 
   // JWT

@@ -48,6 +48,20 @@ app.use(rateLimiter);
 
 // =====================
 // Routes
+// Route racine
+const path = require('path');
+app.get('/', (req, res) => {
+  res.status(200).json({ message: 'Bienvenue sur l’API Jour de Marche !' });
+});
+
+// Route favicon.ico
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(__dirname, '../docs/favicon.ico'), err => {
+    if (err) {
+      res.status(204).end(); // No Content si le favicon n'existe pas
+    }
+  });
+});
 // =====================
 
 // Health check

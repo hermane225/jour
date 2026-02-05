@@ -12,9 +12,8 @@ services:
     runtime: node
     region: frankfurt
     plan: free
-    rootDirectory: Jour_de_marche_api
-    buildCommand: npm ci
-    startCommand: npm start
+    buildCommand: cd Jour_de_marche_api && npm ci
+    startCommand: cd Jour_de_marche_api && npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

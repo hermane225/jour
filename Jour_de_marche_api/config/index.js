@@ -108,6 +108,11 @@ const config = {
     email: process.env.ADMIN_EMAIL || 'admin@jour-de-marche.com',
     password: process.env.ADMIN_PASSWORD || 'changeme123',
   },
+
+  // Google OAuth
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+  },
 };
 
 module.exports = config;

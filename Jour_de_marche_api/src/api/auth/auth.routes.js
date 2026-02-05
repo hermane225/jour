@@ -171,4 +171,30 @@ router.post(
  */
 router.get('/me', authMiddleware, authController.getCurrentUser);
 
+/**
+ * @swagger
+ * /auth/google:
+ *   post:
+ *     summary: Authenticate with Google
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - credential
+ *             properties:
+ *               credential:
+ *                 type: string
+ *                 description: Google ID token
+ *     responses:
+ *       200:
+ *         description: Authentication successful
+ *       401:
+ *         description: Invalid Google token
+ */
+router.post('/google', authController.googleAuth);
+
 module.exports = router;

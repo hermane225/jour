@@ -1,7 +1,10 @@
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../../models/User');
 const config = require('../../../config');
 const logger = require('../../../config/logger');
+
+const googleClient = new OAuth2Client(config.google.clientId);
 
 const authController = {
   // Register
@@ -203,6 +206,86 @@ const authController = {
       res.status(500).json({
         success: false,
         message: 'Erreur lors de la réinitialisation',
+      });
+    }
+  },
+
+  // Google OAuth
+  googleAuth: async (req, res) => {
+    try {
+      const { credential } = req.body;
+
+      if (!credential) {
+        return res.status(400).json({
+          success: false,
+          message: 'Token Google requis',
+        });
+      }
+
+      // Vérifier le token Google
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: config.google.clientId,
+      });
+
+      const payload = ticket.getPayload();
+      const { email, given_name, family_name, picture, sub: googleId } = payload;
+
+      // Chercher ou créer l'utilisateur
+      let user = await User.findOne({ email });
+
+      if (!user) {
+        // Créer un nouvel utilisateur
+        user = new User({
+          firstName: given_name || 'Utilisateur',
+          lastName: family_name || 'Google',
+          email,
+          googleId,
+          avatar: picture,
+          password: Math.random().toString(36).slice(-12), // Mot de passe aléatoire
+          isEmailVerified: true,
+          role: 'customer',
+        });
+        await user.save();
+        logger.info(`✅ Nouvel utilisateur Google créé: ${email}`);
+      } else {
+        // Mettre à jour le googleId si nécessaire
+        if (!user.googleId) {
+          user.googleId = googleId;
+          if (picture && !user.avatar) user.avatar = picture;
+          await user.save();
+        }
+        logger.info(`✅ Utilisateur Google connecté: ${email}`);
+      }
+
+      // Générer le token JWT
+      const token = jwt.sign(
+        { id: user._id, email: user.email, role: user.role },
+        config.jwt.secret,
+        { expiresIn: config.jwt.expiry }
+      );
+
+      const refreshToken = jwt.sign(
+        { id: user._id },
+        config.jwt.refreshSecret,
+        { expiresIn: config.jwt.refreshExpiry }
+      );
+
+      res.json({
+        success: true,
+        message: 'Connexion Google réussie',
+        data: {
+          user: user.toPublicJSON(),
+          token,
+          refreshToken,
+        },
+      });
+    } catch (error) {
+      logger.error('Erreur Google Auth:', error.message);
+      res.status(401).json({
+        success: false,
+        message: 'Token Google invalide',
+        error: error.message,
       });
     }
   },

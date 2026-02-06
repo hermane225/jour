@@ -5,17 +5,24 @@ const shopsValidators = {
     body('name')
       .notEmpty().withMessage('Nom requis')
       .isLength({ min: 2 }).withMessage('Nom minimum 2 caractères'),
-    body('category')
-      .notEmpty().withMessage('Catégorie requise')
-      .isIn(['farm', 'market', 'bakery', 'butcher', 'fishmonger', 'other']),
     body('description').optional().trim(),
+    body('logo').optional().isString(),
+    body('phone').optional().isString(),
+    body('address').optional().isString(),
+    body('sellerId')
+      .notEmpty().withMessage('sellerId requis')
+      .isString(),
+    body('deliveryOptions').optional().isArray(),
   ],
 
   update: [
     body('name').optional().isLength({ min: 2 }),
     body('description').optional().trim(),
-    body('deliveryRadius').optional().isFloat({ min: 0 }),
-    body('minimumOrder').optional().isFloat({ min: 0 }),
+    body('logo').optional().isString(),
+    body('phone').optional().isString(),
+    body('address').optional().isString(),
+    body('sellerId').optional().isString(),
+    body('deliveryOptions').optional().isArray(),
   ],
 };
 

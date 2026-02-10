@@ -22,7 +22,7 @@ exports.updateUserRole = [
     .isMongoId()
     .withMessage('ID utilisateur invalide'),
   body('role')
-    .isIn(['customer', 'farmer', 'merchant', 'driver', 'admin'])
+    .isIn(['customer', 'admin'])
     .withMessage('Rôle invalide'),
 ];
 

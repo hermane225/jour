@@ -81,11 +81,11 @@ exports.assignDelivery = async (req, res, next) => {
       });
     }
 
-    const driver = await User.findById(driverId);
-    if (!driver || driver.role !== 'driver') {
+    const driverProfile = await Driver.findOne({ user: driverId, status: { $in: ['validated', 'active'] } });
+    if (!driverProfile) {
       return res.status(404).json({
         success: false,
-        message: 'Livreur non trouvé',
+        message: 'Livreur non trouvé ou non validé',
       });
     }
 

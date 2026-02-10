@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../../models/User');
+const Shop = require('../../models/Shop');
+const Driver = require('../../models/Driver');
 const config = require('../../../config');
 const logger = require('../../../config/logger');
 
@@ -93,13 +95,24 @@ const authController = {
       user.lastLogin = new Date();
       await user.save();
 
+      // Check for active shop and driver
+      const hasActiveShop = await Shop.findOne({ owner: user._id, status: 'active' }) ? true : false;
+      const hasActiveDriver = await Driver.findOne({
+        user: user._id,
+        status: { $in: ['validated', 'active'] }
+      }) ? true : false;
+
       logger.info(`✅ Connexion utilisateur: ${email}`);
 
       res.json({
         success: true,
         message: 'Connexion réussie',
         data: {
-          user: user.toPublicJSON(),
+          user: {
+            ...user.toPublicJSON(),
+            hasActiveShop,
+            hasActiveDriver,
+          },
           token,
         },
       });

@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['customer', 'farmer', 'merchant', 'driver', 'admin'],
+      enum: ['customer', 'admin'],
       default: 'customer',
     },
     status: {
@@ -52,10 +52,6 @@ const userSchema = new mongoose.Schema(
       country: String,
       latitude: Number,
       longitude: Number,
-    },
-    phone: {
-      type: String,
-      trim: true,
     },
     isVerified: {
       type: Boolean,

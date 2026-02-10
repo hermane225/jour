@@ -1,0 +1,71 @@
+[33mcommit 5ed2a02c1f402072708796902ebef7ebc75cc0aa[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: hermane225 <mj2190175@gmail.com>
+Date:   Mon Feb 9 13:51:28 2026 +0000
+
+    Suppression de la restriction de rôle pour la création de boutique (tous users)
+
+[33mcommit 8e765b568eae66d729c7d27793551035749eb804[m
+Author: hermane225 <mj2190175@gmail.com>
+Date:   Fri Feb 6 11:33:10 2026 +0000
+
+    Adaptation des champs validés pour shops : seuls les champs principaux sont pris en compte
+
+[33mcommit 12d363ff4a7f1ac41563d4101dc47a44d2e547f2[m
+Author: hermane225 <mj2190175@gmail.com>
+Date:   Thu Feb 5 16:36:24 2026 +0000
+
+    feat: Ajouter authentification Google OAuth
+
+[33mcommit 528c6cd3c50e7bc8b5f2620d9df280b80e2d5ccc[m
+Author: hermane225 <mj2190175@gmail.com>
+Date:   Thu Feb 5 13:38:17 2026 +0000
+
+    fix: Ajouter le module uploads manquant
+
+[33mcommit d006bd7687e57323406d24d8bd6c58ff7e53623a[m
+Author: hermane225 <mj2190175@gmail.com>
+Date:   Thu Feb 5 12:31:20 2026 +0000
+
+    fix: Ajouter render.yaml à la racine avec rootDir configuré
+
+[33mcommit fd15a5d6abdaace2517eb71417bde18245aca6b0[m
+Author: hermane225 <mj2190175@gmail.com>
+Date:   Thu Feb 5 12:03:58 2026 +0000
+
+    add render
+
+[33mcommit 7339d9e1b968777cdbd6f988396394c50b4d2081[m
+Author: hermane225 <mj2190175@gmail.com>
+Date:   Thu Feb 5 11:27:11 2026 +0000
+
+    fix: Supprimer Dockerfile pour utiliser le buildpack Node.js natif de Render
+
+[33mcommit 40a715f0b1b053ce25b88c39d04a2c012bab6f8a[m
+Author: hermane225 <mj2190175@gmail.com>
+Date:   Thu Feb 5 11:20:57 2026 +0000
+
+    fix: Corriger npm ci --omit=dev au lieu de --only=production
+
+[33mcommit 5e7056712a2a24cccedddea2bd74d61a9ca247d8[m
+Author: hermane225 <mj2190175@gmail.com>
+Date:   Thu Feb 5 11:12:39 2026 +0000
+
+    fix: Ajouter package-lock.json pour npm ci sur Render
+
+[33mcommit 54716439a5e7deb13826aca314919bc6517774d3[m
+Author: hermane225 <mj2190175@gmail.com>
+Date:   Thu Feb 5 11:07:33 2026 +0000
+
+    feat: Configuration Redis Upstash avec TLS + préparation déploiement Render
+
+[33mcommit a2a3b59f79e7dfd76336c4e790d3aadca14ce22c[m
+Author: hermane225 <mj2190175@gmail.com>
+Date:   Thu Jan 8 10:25:22 2026 +0000
+
+    api
+
+[33mcommit 98979025214124dae142c48402fad70c41a4c0bc[m
+Author: hermane225 <mj2190175@gmail.com>
+Date:   Wed Dec 3 11:09:22 2025 +0000
+
+    backend

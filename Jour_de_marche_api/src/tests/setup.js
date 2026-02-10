@@ -1,8 +1,12 @@
 const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
+
+let mongoServer;
 
 beforeAll(async () => {
-  // Connect to test database
-  const mongoUri = process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/jour_de_marche_test';
+  // Start in-memory MongoDB server
+  mongoServer = await MongoMemoryServer.create();
+  const mongoUri = mongoServer.getUri();
   await mongoose.connect(mongoUri);
 });
 
@@ -10,6 +14,7 @@ afterAll(async () => {
   // Clean up and disconnect
   await mongoose.connection.dropDatabase();
   await mongoose.disconnect();
+  await mongoServer.stop();
 });
 
 beforeEach(async () => {

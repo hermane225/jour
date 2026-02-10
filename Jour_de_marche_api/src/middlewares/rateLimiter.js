@@ -1,7 +1,7 @@
 const rateLimit = require('express-rate-limit');
 const config = require('../../config');
 
-const rateLimiter = rateLimit({
+const rateLimiter = process.env.NODE_ENV === 'test' ? (req, res, next) => next() : rateLimit({
   windowMs: config.rateLimit.windowMs,
   max: config.rateLimit.maxRequests,
   message: {
@@ -12,7 +12,7 @@ const rateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-const authRateLimiter = rateLimit({
+const authRateLimiter = process.env.NODE_ENV === 'test' ? (req, res, next) => next() : rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5,
   message: {

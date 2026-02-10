@@ -19,7 +19,7 @@ const authValidators = {
       .isLength({ min: 6 }).withMessage('Mot de passe minimum 6 caractères'),
     body('role')
       .optional()
-      .isIn(['customer', 'admin']).withMessage('Rôle invalide'),
+      .isIn(['customer', 'admin', 'farmer', 'driver']).withMessage('Rôle invalide'),
   ],
 
   login: [

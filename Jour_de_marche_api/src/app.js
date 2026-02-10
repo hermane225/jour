@@ -15,6 +15,9 @@ const apiRoutes = require('./api/index.routes');
 
 const app = express();
 
+// Trust proxy for environments like Render
+app.set('trust proxy', 1);
+
 // =====================
 // Global Middlewares
 // =====================

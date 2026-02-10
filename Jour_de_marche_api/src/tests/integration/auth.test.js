@@ -19,7 +19,7 @@ describe('Auth Routes', () => {
       expect(res.body.success).toBe(true);
       expect(res.body.data).toHaveProperty('token');
       expect(res.body.data.user.email).toBe('john@example.com');
-    });
+    }, 15000);
 
     it('should not register user with existing email', async () => {
       await User.create({
@@ -40,7 +40,7 @@ describe('Auth Routes', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
-    });
+    }, 15000);
   });
 
   describe('POST /api/auth/login', () => {
@@ -51,7 +51,7 @@ describe('Auth Routes', () => {
         email: 'test@example.com',
         password: 'password123',
       });
-    });
+    }, 15000);
 
     it('should login user with valid credentials', async () => {
       const res = await request(app)

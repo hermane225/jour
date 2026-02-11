@@ -1,6 +1,14 @@
 const request = require('supertest');
-const app = require('../../app');
-const User = require('../../models/User');
+const mongoose = require('mongoose');
+
+let app;
+let User;
+
+beforeAll(async () => {
+  // Require app after global DB setup
+  app = require('../../app');
+  User = require('../../models/User');
+}, 30000);
 
 describe('Auth Routes', () => {
   describe('POST /api/auth/register', () => {

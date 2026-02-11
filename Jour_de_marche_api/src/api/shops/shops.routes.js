@@ -3,6 +3,7 @@ const shopsController = require('./shops.controller');
 const shopsValidators = require('./shops.validator');
 const validationMiddleware = require('../../middlewares/validation.middleware');
 const authMiddleware = require('../../middlewares/auth.middleware');
+const rolesMiddleware = require('../../middlewares/roles.middleware');
 
 
 const router = express.Router();
@@ -22,6 +23,7 @@ router.get('/', shopsController.getAllShops);
 router.post(
   '/',
   authMiddleware,
+  rolesMiddleware(['customer']),
   shopsValidators.create,
   validationMiddleware,
   shopsController.createShop,

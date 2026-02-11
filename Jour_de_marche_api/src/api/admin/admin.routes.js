@@ -101,4 +101,28 @@ router.post(
   adminController.sendNotification,
 );
 
+/**
+ * @route   GET /api/admin/shops
+ * @desc    Get all shops
+ * @access  Private (Admin)
+ */
+router.get(
+  '/shops',
+  authMiddleware,
+  rolesMiddleware(['admin']),
+  adminController.getAllShops,
+);
+
+/**
+ * @route   DELETE /api/admin/shops/:shopId
+ * @desc    Delete shop
+ * @access  Private (Admin)
+ */
+router.delete(
+  '/shops/:shopId',
+  authMiddleware,
+  rolesMiddleware(['admin']),
+  adminController.deleteShop,
+);
+
 module.exports = router;

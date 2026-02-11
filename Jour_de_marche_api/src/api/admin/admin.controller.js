@@ -1,6 +1,7 @@
 const PlatformSetting = require('../../models/PlatformSetting');
 const User = require('../../models/User');
 const Order = require('../../models/Order');
+const Shop = require('../../models/Shop');
 const logger = require('../../../config/logger');
 
 /**
@@ -217,6 +218,67 @@ exports.sendNotification = async (req, res, next) => {
     });
   } catch (error) {
     logger.error(`Erreur envoi notification: ${error.message}`);
+    next(error);
+  }
+};
+
+/**
+ * Get all shops (admin)
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ */
+exports.getAllShops = async (req, res, next) => {
+  try {
+    const { status, limit = 10, skip = 0 } = req.query;
+
+    const filter = {};
+    if (status) filter.status = status;
+
+    const shops = await Shop.find(filter)
+      .populate('owner', 'firstName lastName email')
+      .limit(parseInt(limit, 10))
+      .skip(parseInt(skip, 10))
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: 'Boutiques récupérées',
+      data: shops,
+      total: await Shop.countDocuments(filter),
+    });
+  } catch (error) {
+    logger.error(`Erreur récupération boutiques: ${error.message}`);
+    next(error);
+  }
+};
+
+/**
+ * Delete shop (admin)
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ */
+exports.deleteShop = async (req, res, next) => {
+  try {
+    const { shopId } = req.params;
+
+    const shop = await Shop.findByIdAndDelete(shopId);
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Boutique non trouvée',
+      });
+    }
+
+    logger.info(`✅ Boutique supprimée: ${shopId}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Boutique supprimée',
+      data: shop,
+    });
+  } catch (error) {
+    logger.error(`Erreur suppression boutique: ${error.message}`);
     next(error);
   }
 };

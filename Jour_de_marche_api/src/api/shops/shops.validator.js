@@ -9,8 +9,8 @@ const shopsValidators = {
     body('logo').optional().isString(),
     body('phone').optional().isString(),
     body('address').optional().isString(),
-    body('sellerId')
-      .notEmpty().withMessage('sellerId requis')
+    body('owner')
+      .notEmpty().withMessage('owner requis')
       .isString(),
     body('deliveryOptions').optional().isArray(),
   ],
@@ -21,7 +21,7 @@ const shopsValidators = {
     body('logo').optional().isString(),
     body('phone').optional().isString(),
     body('address').optional().isString(),
-    body('sellerId').optional().isString(),
+    body('owner').optional().isString(),
     body('deliveryOptions').optional().isArray(),
   ],
 };

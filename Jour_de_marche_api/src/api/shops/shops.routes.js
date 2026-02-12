@@ -23,7 +23,6 @@ router.get('/', shopsController.getAllShops);
 router.post(
   '/',
   authMiddleware,
-  rolesMiddleware(['customer']),
   shopsValidators.create,
   validationMiddleware,
   shopsController.createShop,

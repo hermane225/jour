@@ -31,6 +31,9 @@ const rolesMiddleware = (allowedRoles = []) => {
           hasPermission = true;
           break;
         }
+      } else if (role === 'customer' && req.user.role === 'customer') {
+        hasPermission = true;
+        break;
       }
     }
 

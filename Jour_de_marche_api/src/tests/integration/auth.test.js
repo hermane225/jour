@@ -5,6 +5,15 @@ let app;
 let User;
 
 beforeAll(async () => {
+  // Wait for DB connection to be ready
+  await new Promise((resolve) => {
+    if (mongoose.connection.readyState === 1) {
+      resolve();
+    } else {
+      mongoose.connection.once('connected', resolve);
+    }
+  });
+
   // Require app after global DB setup
   app = require('../../app');
   User = require('../../models/User');

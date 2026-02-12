@@ -23,8 +23,8 @@ const shopSchema = new mongoose.Schema(
       required: true,
     },
     category: {
-      type: String,
-      enum: ['farm', 'market', 'bakery', 'butcher', 'fishmonger', 'other'],
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
       required: true,
     },
     status: {

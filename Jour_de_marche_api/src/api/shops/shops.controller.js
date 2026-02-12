@@ -13,6 +13,7 @@ const shopsController = {
 
       let shops = await Shop.find(filter)
         .populate('owner', 'firstName lastName email')
+        .populate('category', 'name slug')
         .limit(limit)
         .skip(skip)
         .sort({ createdAt: -1 });

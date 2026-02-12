@@ -5,6 +5,9 @@ const shopsValidators = {
     body('name')
       .notEmpty().withMessage('Nom requis')
       .isLength({ min: 2 }).withMessage('Nom minimum 2 caractères'),
+    body('category')
+      .notEmpty().withMessage('Catégorie requise')
+      .isMongoId().withMessage('Catégorie invalide'),
     body('description').optional().trim(),
     body('logo').optional().isString(),
     body('phone').optional().isString(),
@@ -17,6 +20,7 @@ const shopsValidators = {
 
   update: [
     body('name').optional().isLength({ min: 2 }),
+    body('category').optional().isMongoId().withMessage('Catégorie invalide'),
     body('description').optional().trim(),
     body('logo').optional().isString(),
     body('phone').optional().isString(),

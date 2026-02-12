@@ -73,10 +73,13 @@ const shopsController = {
         data: shop,
       });
     } catch (error) {
-      logger.error('Erreur lors de la création de la boutique:', error.message);
+      logger.error('Erreur lors de la création de la boutique:', error);
+
       res.status(500).json({
         success: false,
         message: 'Erreur lors de la création de la boutique',
+        error: error.message,
+        errors: error.errors || null  // si c’est une ValidationError Mongoose
       });
     }
   },

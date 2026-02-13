@@ -52,13 +52,17 @@ const shopsController = {
   // Create shop
   createShop: async (req, res) => {
     try {
-      const { name, category, description } = req.body;
+      const { name, category, description, address, deliveryRadius, deliveryFee, minimumOrder } = req.body;
 
       const shop = new Shop({
         name,
         slug: name.toLowerCase().replace(/\s+/g, '-'),
         category,
         description,
+        address,
+        deliveryRadius,
+        deliveryFee,
+        minimumOrder,
         owner: req.user.id,
       });
 

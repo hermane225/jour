@@ -39,13 +39,14 @@ const categoriesController = {
   // Create category
   createCategory: async (req, res) => {
     try {
-      const { name, description, icon } = req.body;
+      const { name, description, icon, subcategories } = req.body;
 
       const category = new Category({
         name,
         slug: name.toLowerCase().replace(/\s+/g, '-'),
         description,
         icon,
+        subcategories: subcategories || [],
       });
 
       await category.save();
@@ -70,11 +71,18 @@ const categoriesController = {
   updateCategory: async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, description, icon, status } = req.body;
+      const { name, description, icon, status, subcategories } = req.body;
+
+      const updateData = { name, description, icon, status };
+      
+      // Only add subcategories to update if it's provided
+      if (subcategories !== undefined) {
+        updateData.subcategories = subcategories;
+      }
 
       const category = await Category.findByIdAndUpdate(
         id,
-        { name, description, icon, status },
+        updateData,
         { new: true, runValidators: true }
       );
 

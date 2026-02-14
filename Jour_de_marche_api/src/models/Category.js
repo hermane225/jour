@@ -16,6 +16,10 @@ const categorySchema = new mongoose.Schema(
     },
     description: String,
     icon: String,
+    subcategories: {
+      type: [String],
+      default: [],
+    },
     status: {
       type: String,
       enum: ['active', 'inactive'],

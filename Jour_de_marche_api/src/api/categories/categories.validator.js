@@ -7,6 +7,7 @@ const categoriesValidators = {
       .isLength({ min: 2 }).withMessage('Nom minimum 2 caractères'),
     body('description').optional().trim(),
     body('icon').optional().isString(),
+    body('subcategories').optional().isArray().withMessage('Les sous-catégories doivent être un tableau'),
   ],
 
   update: [
@@ -15,6 +16,7 @@ const categoriesValidators = {
     body('description').optional().trim(),
     body('icon').optional().isString(),
     body('status').optional().isIn(['active', 'inactive']),
+    body('subcategories').optional().isArray().withMessage('Les sous-catégories doivent être un tableau'),
   ],
 
   delete: [

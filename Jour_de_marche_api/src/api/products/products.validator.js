@@ -14,6 +14,12 @@ const productsValidators = {
     body('quantity')
       .notEmpty().withMessage('Quantité requise')
       .isInt({ min: 0 }).withMessage('Quantité doit être >= 0'),
+    body('shop')
+      .notEmpty().withMessage('Shop requis')
+      .isMongoId().withMessage('Shop doit être un ObjectId valide'),
+    body('images')
+      .isArray({ min: 1 }).withMessage('Au moins une image est requise')
+      .custom((arr) => arr.every((img) => typeof img === 'string' && img.length > 0)).withMessage('Chaque image doit être une chaîne non vide'),
   ],
 };
 

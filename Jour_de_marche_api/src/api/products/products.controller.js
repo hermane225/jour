@@ -49,7 +49,33 @@ const productsController = {
   // Create product
   createProduct: async (req, res) => {
     try {
-      const { name, category, price, quantity, description, shop } = req.body;
+      const { name, category, price, quantity, description, shop, images } = req.body;
+
+      // Vérifier l'existence du shop
+      const foundShop = await Shop.findById(shop);
+      if (!foundShop) {
+        return res.status(400).json({
+          success: false,
+          message: 'Boutique introuvable',
+        });
+      }
+
+      // Vérifier que l'utilisateur connecté est le propriétaire du shop
+      if (String(foundShop.owner) !== String(req.user._id)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Vous n\'êtes pas autorisé à ajouter un produit à cette boutique',
+        });
+      }
+
+      // Gestion des images (doit être un tableau non vide de chaînes)
+      let productImages = Array.isArray(images) ? images.filter(img => typeof img === 'string' && img.length > 0) : [];
+      if (!productImages.length) {
+        return res.status(400).json({
+          success: false,
+          message: 'Au moins une image valide est requise',
+        });
+      }
 
       const product = new Product({
         name,
@@ -59,6 +85,7 @@ const productsController = {
         quantity,
         description,
         shop,
+        images: productImages,
       });
 
       await product.save();

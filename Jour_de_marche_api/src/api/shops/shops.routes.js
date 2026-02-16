@@ -1,3 +1,14 @@
+const Category = require('../../models/Category');
+
+// Route pour récupérer toutes les catégories actives (pour le front)
+router.get('/categories', async (req, res) => {
+  try {
+    const categories = await Category.find({ status: 'active' }).select('name _id slug');
+    res.json({ success: true, data: categories });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Erreur lors de la récupération des catégories', error: error.message });
+  }
+});
 const express = require('express');
 const shopsController = require('./shops.controller');
 const shopsValidators = require('./shops.validator');

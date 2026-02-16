@@ -64,6 +64,10 @@ const shopSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    deliveryOptions: [{
+      type: String,
+      enum: ['livraison locale', 'retrait en magasin', 'livraison nationale'],
+    }],
     minimumOrder: {
       type: Number,
       default: 0,

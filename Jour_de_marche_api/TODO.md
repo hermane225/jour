@@ -1,8 +1,11 @@
-# TODO - Product Shop Linking
+# TODO - Shop Form Updates
 
-## Task
-Ensure each product is linked to a shop and products have an image.
+## Task: Modify shop creation form to include all required fields
 
-## Steps:
-- [ ] 1. Update `products.validator.js` - Add shop and images validation
-- [ ] 2. Update `products.controller.js` - Add shop existence and ownership verification, handle images
+### Steps:
+1. [ ] Add `deliveryOptions` field to Shop model
+2. [ ] Update shops controller to extract and save `logo`, `phone`, and `deliveryOptions`
+
+### Changes Made:
+- Added `deliveryOptions` field to Shop model (array of strings)
+- Updated createShop controller to extract and save `logo`, `phone`, and `deliveryOptions` fields

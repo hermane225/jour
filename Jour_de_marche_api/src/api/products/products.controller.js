@@ -49,8 +49,18 @@ const productsController = {
   // Create product
   createProduct: async (req, res) => {
     try {
-      const { name, category, price, quantity, description, shop, images } = req.body;
 
+      // Vérifier l'existence de la catégorie
+      const Category = require('../../models/Category');
+      const foundCategory = await Category.findById(category);
+      if (!foundCategory) {
+        return res.status(400).json({
+          success: false,
+          message: 'Catégorie introuvable',
+        });
+      }
+
+      // ...existing code...
       // Vérifier l'existence du shop
       const foundShop = await Shop.findById(shop);
       if (!foundShop) {

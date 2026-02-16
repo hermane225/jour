@@ -7,7 +7,7 @@ const productsValidators = {
       .isLength({ min: 2 }).withMessage('Nom minimum 2 caractères'),
     body('category')
       .notEmpty().withMessage('Catégorie requise')
-      .isIn(['fruits', 'vegetables', 'dairy', 'meat', 'fish', 'bakery', 'other']),
+      .isMongoId().withMessage('Catégorie doit être un ObjectId valide'),
     body('price')
       .notEmpty().withMessage('Prix requis')
       .isFloat({ min: 0 }).withMessage('Prix doit être >= 0'),

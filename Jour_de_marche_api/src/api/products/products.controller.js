@@ -49,6 +49,8 @@ const productsController = {
   // Create product
   createProduct: async (req, res) => {
     try {
+      // Extraire les champs du body
+      const { name, category, price, quantity, description, shop, images } = req.body;
 
       // Vérifier l'existence de la catégorie
       const Category = require('../../models/Category');
@@ -60,7 +62,6 @@ const productsController = {
         });
       }
 
-      // ...existing code...
       // Vérifier l'existence du shop
       const foundShop = await Shop.findById(shop);
       if (!foundShop) {
@@ -79,7 +80,7 @@ const productsController = {
       }
 
       // Gestion des images (doit être un tableau non vide de chaînes)
-      let productImages = Array.isArray(images) ? images.filter(img => typeof img === 'string' && img.length > 0) : [];
+      const productImages = Array.isArray(images) ? images.filter((img) => typeof img === 'string' && img.length > 0) : [];
       if (!productImages.length) {
         return res.status(400).json({
           success: false,

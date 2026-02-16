@@ -23,9 +23,9 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
     category: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
       required: true,
-      enum: ['fruits', 'vegetables', 'dairy', 'meat', 'fish', 'bakery', 'other'],
     },
     subCategory: String,
     images: [String],

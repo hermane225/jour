@@ -72,10 +72,11 @@ const productsController = {
       }
 
       // Vérifier que l'utilisateur connecté est le propriétaire du shop
-      if (String(foundShop.owner) !== String(req.user._id)) {
+      const userId = req.user._id || req.user.id;
+      if (String(foundShop.owner) !== String(userId)) {
         return res.status(403).json({
           success: false,
-          message: 'Vous n\'êtes pas autorisé à ajouter un produit à cette boutique',
+          message: 'Seul le créateur de la boutique peut ajouter un produit',
         });
       }
 

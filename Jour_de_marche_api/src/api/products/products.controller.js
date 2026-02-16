@@ -115,6 +115,7 @@ const productsController = {
       res.status(500).json({
         success: false,
         message: 'Erreur lors de la création du produit',
+        error: error.message,
       });
     }
   },

@@ -1,4 +1,11 @@
+const express = require('express');
+const router = express.Router();
 const Category = require('../../models/Category');
+const shopsController = require('./shops.controller');
+const shopsValidators = require('./shops.validator');
+const validationMiddleware = require('../../middlewares/validation.middleware');
+const authMiddleware = require('../../middlewares/auth.middleware');
+const rolesMiddleware = require('../../middlewares/roles.middleware');
 
 // Route pour récupérer toutes les catégories actives (pour le front)
 router.get('/categories', async (req, res) => {
@@ -9,15 +16,6 @@ router.get('/categories', async (req, res) => {
     res.status(500).json({ success: false, message: 'Erreur lors de la récupération des catégories', error: error.message });
   }
 });
-const express = require('express');
-const shopsController = require('./shops.controller');
-const shopsValidators = require('./shops.validator');
-const validationMiddleware = require('../../middlewares/validation.middleware');
-const authMiddleware = require('../../middlewares/auth.middleware');
-const rolesMiddleware = require('../../middlewares/roles.middleware');
-
-
-const router = express.Router();
 
 /**
  * @route   GET /api/shops

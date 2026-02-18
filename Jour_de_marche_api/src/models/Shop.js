@@ -30,7 +30,7 @@ const shopSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ['active', 'inactive', 'suspended', 'pending'],
-      default: 'pending',
+      default: 'active',
     },
     address: {
       street: String,

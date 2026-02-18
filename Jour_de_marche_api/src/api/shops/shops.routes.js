@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const Category = require('../../models/Category');
 const shopsController = require('./shops.controller');
@@ -25,6 +26,20 @@ router.get('/categories', async (req, res) => {
 router.get('/', shopsController.getAllShops);
 
 /**
+ * @route   GET /api/shops/my-shops
+ * @desc    Get user's shops
+ * @access  Private
+ */
+router.get('/my-shops', authMiddleware, shopsController.getMyShops);
+
+/**
+ * @route   GET /api/shops/:shopId
+ * @desc    Get shop by ID
+ * @access  Public
+ */
+router.get('/:shopId', shopsController.getShopById);
+
+/**
  * @route   POST /api/shops
  * @desc    Create a new shop
  * @access  Private (Farmer/Merchant)
@@ -35,6 +50,19 @@ router.post(
   shopsValidators.create,
   validationMiddleware,
   shopsController.createShop,
+);
+
+/**
+ * @route   PUT /api/shops/:shopId
+ * @desc    Update shop
+ * @access  Private (Shop owner)
+ */
+router.put(
+  '/:shopId',
+  authMiddleware,
+  shopsValidators.update,
+  validationMiddleware,
+  shopsController.updateShop,
 );
 
 module.exports = router;

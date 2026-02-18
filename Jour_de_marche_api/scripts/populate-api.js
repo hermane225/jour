@@ -10,19 +10,19 @@ let userId = '';
 // Configuration des boutiques avec de vraies données professionnelles
 const shopsData = [
   {
-    name: "Ferme Bio du Soleil",
-    description: "Producteur local de fruits et légumes biologiques cultivés avec passion. Nos produits frais sont récoltés chaque jour pour garantir qualité et fraîcheur.",
-    logo: "https://images.unsplash.com/photo-1560493676-04071c5f467b?w=400",
-    banner: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200",
-    category: null, // À remplir avec l'ID catégorie "Fruits et Légumes"
+    name: "Le Potager de Marie",
+    description: "Maraîcher bio passionné. Légumes et fruits de saison cultivés dans le respect de l'environnement et récoltés à maturité.",
+    logo: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400",
+    banner: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200",
+    category: null,
     address: {
-      street: "25 Route des Champs",
-      city: "Lyon",
-      zipCode: "69001",
+      street: "18 Chemin des Vergers",
+      city: "Bordeaux",
+      zipCode: "33000",
       country: "France",
       coordinates: {
         type: "Point",
-        coordinates: [4.8357, 45.7640] // Lyon coordinates [longitude, latitude]
+        coordinates: [-0.5792, 44.8378]
       }
     },
     contact: {
@@ -49,19 +49,19 @@ const shopsData = [
     }
   },
   {
-    name: "Tradition Boucherie",
-    description: "Artisan boucher depuis 3 générations. Viandes de qualité supérieure provenant d'élevages locaux et respectueux du bien-être animal.",
+    name: "Chez Marcel le Boucher",
+    description: "Boucherie familiale depuis 1950. Sélection rigoureuse de viandes d'élevages certifiés et découpe traditionnelle.",
     logo: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=400",
     banner: "https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=1200",
     category: null, // À remplir avec catégorie "Viandes"
     address: {
-      street: "12 Avenue du Marché",
-      city: "Paris",
-      zipCode: "75015",
+      street: "45 Boulevard Victor Hugo",
+      city: "Nantes",
+      zipCode: "44000",
       country: "France",
       coordinates: {
         type: "Point",
-        coordinates: [2.3522, 48.8566] // Paris coordinates [longitude, latitude]
+        coordinates: [-1.5534, 47.2184]
       }
     },
     contact: {
@@ -88,19 +88,19 @@ const shopsData = [
     }
   },
   {
-    name: "Terroirs & Fromages",
-    description: "Crèmerie artisanale proposant une sélection exceptionnelle de fromages fermiers français. Plus de 150 variétés provenant des meilleures fromageries.",
+    name: "La Maison du Fromage",
+    description: "Spécialiste des fromages artisanaux. Une sélection unique de 200 fromages français et européens affinés avec soin.",
     logo: "https://images.unsplash.com/photo-1452195100486-9cc805987862?w=400",
     banner: "https://images.unsplash.com/photo-1618164436241-4473940d1f5c?w=1200",
     category: null, // À remplir avec catégorie "Produits laitiers"
     address: {
-      street: "8 Rue du Fromage",
-      city: "Toulouse",
-      zipCode: "31000",
+      street: "22 Rue des Épices",
+      city: "Strasbourg",
+      zipCode: "67000",
       country: "France",
       coordinates: {
         type: "Point",
-        coordinates: [1.4437, 43.6047] // Toulouse coordinates [longitude, latitude]
+        coordinates: [7.7521, 48.5734]
       }
     },
     contact: {
@@ -127,19 +127,19 @@ const shopsData = [
     }
   },
   {
-    name: "Boulangerie Artisanale",
-    description: "Boulangerie-pâtisserie artisanale. Pain au levain naturel et pâtisseries maison préparés chaque jour par nos artisans boulangers.",
+    name: "Au Pain d'Antan",
+    description: "Boulangerie traditionnelle. Fabrication artisanale de pains au levain et viennoiseries pur beurre depuis 1985.",
     logo: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400",
     banner: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=1200",
     category: null, // À remplir avec catégorie "Boulangerie"
     address: {
-      street: "15 Place de la République",
-      city: "Marseille",
-      zipCode: "13001",
+      street: "7 Place de la Mairie",
+      city: "Lille",
+      zipCode: "59000",
       country: "France",
       coordinates: {
         type: "Point",
-        coordinates: [5.3698, 43.2965] // Marseille coordinates [longitude, latitude]
+        coordinates: [3.0573, 50.6292]
       }
     },
     contact: {
@@ -166,19 +166,19 @@ const shopsData = [
     }
   },
   {
-    name: "Poissonnerie de l'Océan",
-    description: "Poissonnerie fraîche avec arrivage quotidien direct des ports. Poissons, coquillages et crustacés de la plus haute qualité.",
+    name: "La Criée Atlantique",
+    description: "Poissonnerie artisanale. Produits de la mer ultra-frais livrés chaque matin directement des criées bretonnes.",
     logo: "https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=400",
     banner: "https://images.unsplash.com/photo-1559479083-f3a8c223b416?w=1200",
     category: null, // À remplir avec catégorie "Poissons"
     address: {
-      street: "30 Quai du Port",
-      city: "Nice",
-      zipCode: "06000",
+      street: "12 Port de Commerce",
+      city: "Rennes",
+      zipCode: "35000",
       country: "France",
       coordinates: {
         type: "Point",
-        coordinates: [7.2619, 43.7102] // Nice coordinates [longitude, latitude]
+        coordinates: [-1.6778, 48.1173]
       }
     },
     contact: {

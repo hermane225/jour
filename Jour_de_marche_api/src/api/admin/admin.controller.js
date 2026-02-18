@@ -2,6 +2,7 @@ const PlatformSetting = require('../../models/PlatformSetting');
 const User = require('../../models/User');
 const Order = require('../../models/Order');
 const Shop = require('../../models/Shop');
+const Product = require('../../models/Product');
 const logger = require('../../../config/logger');
 
 /**
@@ -112,8 +113,8 @@ exports.getAllUsers = async (req, res, next) => {
 
     const users = await User.find(filter)
       .select('-password -resetPasswordToken -resetPasswordExpire')
-      .limit(parseInt(limit))
-      .skip(parseInt(skip))
+      .limit(parseInt(limit, 10))
+      .skip(parseInt(skip, 10))
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -141,7 +142,7 @@ exports.updateUserRole = async (req, res, next) => {
     const user = await User.findByIdAndUpdate(
       userId,
       { role },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).select('-password');
 
     if (!user) {
@@ -153,14 +154,14 @@ exports.updateUserRole = async (req, res, next) => {
 
     logger.info(`✅ Rôle utilisateur mis à jour: ${userId} -> ${role}`);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Rôle utilisateur mis à jour',
       data: user,
     });
   } catch (error) {
     logger.error(`Erreur mise à jour rôle: ${error.message}`);
-    next(error);
+    return next(error);
   }
 };
 
@@ -184,14 +185,14 @@ exports.deleteUser = async (req, res, next) => {
 
     logger.info(`✅ Utilisateur supprimé: ${userId}`);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Utilisateur supprimé',
       data: user,
     });
   } catch (error) {
     logger.error(`Erreur suppression utilisateur: ${error.message}`);
-    next(error);
+    return next(error);
   }
 };
 
@@ -202,12 +203,15 @@ exports.deleteUser = async (req, res, next) => {
  */
 exports.sendNotification = async (req, res, next) => {
   try {
-    const { userIds, title, message, type } = req.body;
+    const {
+      userIds, title, message, type,
+    } = req.body;
 
     // TODO: Implement notification sending via Bull queue
     logger.info(`✅ Notification envoyée à ${userIds.length} utilisateurs`);
+    logger.info(`   Titre: ${title}, Type: ${type}, Message: ${message}`);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Notification envoyée',
       data: {
@@ -218,7 +222,7 @@ exports.sendNotification = async (req, res, next) => {
     });
   } catch (error) {
     logger.error(`Erreur envoi notification: ${error.message}`);
-    next(error);
+    return next(error);
   }
 };
 
@@ -272,14 +276,14 @@ exports.deleteShop = async (req, res, next) => {
 
     logger.info(`✅ Boutique supprimée: ${shopId}`);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Boutique supprimée',
       data: shop,
     });
   } catch (error) {
     logger.error(`Erreur suppression boutique: ${error.message}`);
-    next(error);
+    return next(error);
   }
 };
 
@@ -296,7 +300,7 @@ exports.updateShopStatus = async (req, res, next) => {
     const shop = await Shop.findByIdAndUpdate(
       shopId,
       { status },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).populate('owner', 'firstName lastName email');
 
     if (!shop) {
@@ -308,13 +312,179 @@ exports.updateShopStatus = async (req, res, next) => {
 
     logger.info(`✅ Statut boutique mis à jour: ${shopId} -> ${status}`);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Statut boutique mis à jour',
       data: shop,
     });
   } catch (error) {
     logger.error(`Erreur mise à jour statut boutique: ${error.message}`);
+    return next(error);
+  }
+};
+
+/**
+ * Get all orders (admin)
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ */
+exports.getAllOrders = async (req, res, next) => {
+  try {
+    const { status, limit = 20, skip = 0 } = req.query;
+
+    const filter = {};
+    if (status) filter.status = status;
+
+    const orders = await Order.find(filter)
+      .populate('customer', 'firstName lastName email phone')
+      .populate('shop', 'name logo')
+      .limit(parseInt(limit, 10))
+      .skip(parseInt(skip, 10))
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: 'Commandes récupérées',
+      data: orders,
+      total: await Order.countDocuments(filter),
+    });
+  } catch (error) {
+    logger.error(`Erreur récupération commandes: ${error.message}`);
     next(error);
+  }
+};
+
+/**
+ * Update order status (admin)
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ */
+exports.updateOrderStatus = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true, runValidators: true },
+    ).populate('customer', 'firstName lastName email phone')
+      .populate('shop', 'name logo');
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Commande non trouvée',
+      });
+    }
+
+    logger.info(`✅ Statut commande mis à jour: ${orderId} -> ${status}`);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Statut commande mis à jour',
+      data: order,
+    });
+  } catch (error) {
+    logger.error(`Erreur mise à jour statut commande: ${error.message}`);
+    return next(error);
+  }
+};
+
+/**
+ * Get all products (admin)
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ */
+exports.getAllProducts = async (req, res, next) => {
+  try {
+    const { status, limit = 20, skip = 0 } = req.query;
+
+    const filter = {};
+    if (status) filter.status = status;
+
+    const products = await Product.find(filter)
+      .populate('shop', 'name logo')
+      .populate('category', 'name')
+      .limit(parseInt(limit, 10))
+      .skip(parseInt(skip, 10))
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: 'Produits récupérés',
+      data: products,
+      total: await Product.countDocuments(filter),
+    });
+  } catch (error) {
+    logger.error(`Erreur récupération produits: ${error.message}`);
+    next(error);
+  }
+};
+
+/**
+ * Delete product (admin)
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ */
+exports.deleteProduct = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+
+    const product = await Product.findByIdAndDelete(productId);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Produit non trouvé',
+      });
+    }
+
+    logger.info(`✅ Produit supprimé: ${productId}`);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Produit supprimé',
+      data: product,
+    });
+  } catch (error) {
+    logger.error(`Erreur suppression produit: ${error.message}`);
+    return next(error);
+  }
+};
+
+/**
+ * Update user status (admin)
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ */
+exports.updateUserStatus = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { status } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { status },
+      { new: true, runValidators: true },
+    ).select('-password -resetPasswordToken -resetPasswordExpire');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Utilisateur non trouvé',
+      });
+    }
+
+    logger.info(`✅ Statut utilisateur mis à jour: ${userId} -> ${status}`);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Statut utilisateur mis à jour',
+      data: user,
+    });
+  } catch (error) {
+    logger.error(`Erreur mise à jour statut utilisateur: ${error.message}`);
+    return next(error);
   }
 };

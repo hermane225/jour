@@ -12,6 +12,13 @@ const router = express.Router();
 // =====================
 
 /**
+ * @route   GET /api/users/profile
+ * @desc    Get current user profile (unique per user)
+ * @access  Private
+ */
+router.get('/profile', authMiddleware, usersController.getCurrentUserProfile);
+
+/**
  * @route   GET /api/users
  * @desc    Get all users (admin only)
  * @access  Private (Admin)

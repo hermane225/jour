@@ -2,6 +2,31 @@ const User = require('../../models/User');
 const logger = require('../../../config/logger');
 
 const usersController = {
+  // Get current user profile (unique per user)
+  getCurrentUserProfile: async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id).select('-password');
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Utilisateur non trouvé',
+        });
+      }
+
+      res.json({
+        success: true,
+        data: user.toPublicJSON(),
+      });
+    } catch (error) {
+      logger.error('Erreur lors de la récupération du profil:', error.message);
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la récupération du profil',
+      });
+    }
+  },
+
   // Get all users (admin only)
   getAllUsers: async (req, res) => {
     try {

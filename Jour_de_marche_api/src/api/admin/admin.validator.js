@@ -50,3 +50,28 @@ exports.sendNotification = [
     .isIn(['info', 'warning', 'error', 'success'])
     .withMessage('Type invalide'),
 ];
+
+/**
+ * Validation for order status update
+ */
+exports.updateOrderStatus = [
+  param('orderId')
+    .isMongoId()
+    .withMessage('ID commande invalide'),
+  body('status')
+    .isIn(['pending', 'confirmed', 'preparing', 'ready', 'delivering', 'delivered', 'cancelled'])
+    .withMessage('Statut invalide'),
+];
+
+/**
+ * Validation for user status update
+ */
+exports.updateUserStatus = [
+  param('userId')
+    .isMongoId()
+    .withMessage('ID utilisateur invalide'),
+  body('status')
+    .isIn(['active', 'inactive', 'suspended', 'deleted'])
+    .withMessage('Statut invalide'),
+];
+

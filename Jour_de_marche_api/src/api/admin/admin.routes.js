@@ -137,4 +137,68 @@ router.put(
   adminController.updateShopStatus,
 );
 
+/**
+ * @route   GET /api/admin/orders
+ * @desc    Get all orders
+ * @access  Private (Admin)
+ */
+router.get(
+  '/orders',
+  authMiddleware,
+  rolesMiddleware(['admin']),
+  adminController.getAllOrders,
+);
+
+/**
+ * @route   PUT /api/admin/orders/:orderId/status
+ * @desc    Update order status
+ * @access  Private (Admin)
+ */
+router.put(
+  '/orders/:orderId/status',
+  authMiddleware,
+  rolesMiddleware(['admin']),
+  adminValidators.updateOrderStatus,
+  validationMiddleware,
+  adminController.updateOrderStatus,
+);
+
+/**
+ * @route   GET /api/admin/products
+ * @desc    Get all products
+ * @access  Private (Admin)
+ */
+router.get(
+  '/products',
+  authMiddleware,
+  rolesMiddleware(['admin']),
+  adminController.getAllProducts,
+);
+
+/**
+ * @route   DELETE /api/admin/products/:productId
+ * @desc    Delete product
+ * @access  Private (Admin)
+ */
+router.delete(
+  '/products/:productId',
+  authMiddleware,
+  rolesMiddleware(['admin']),
+  adminController.deleteProduct,
+);
+
+/**
+ * @route   PUT /api/admin/users/:userId/status
+ * @desc    Update user status
+ * @access  Private (Admin)
+ */
+router.put(
+  '/users/:userId/status',
+  authMiddleware,
+  rolesMiddleware(['admin']),
+  adminValidators.updateUserStatus,
+  validationMiddleware,
+  adminController.updateUserStatus,
+);
+
 module.exports = router;

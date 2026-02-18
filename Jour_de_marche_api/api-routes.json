@@ -1,0 +1,361 @@
+{
+  "apiBaseUrl": "https://jour-marche-api.onrender.com/api",
+  "routes": {
+    "auth": {
+      "register": {
+        "method": "POST",
+        "path": "/auth/register",
+        "auth": false
+      },
+      "login": {
+        "method": "POST",
+        "path": "/auth/login",
+        "auth": false
+      },
+      "forgotPassword": {
+        "method": "POST",
+        "path": "/auth/forgot-password",
+        "auth": false
+      },
+      "resetPassword": {
+        "method": "POST",
+        "path": "/auth/reset-password/:token",
+        "auth": false
+      }
+    },
+    "user": {
+      "getProfile": {
+        "method": "GET",
+        "path": "/users/profile",
+        "auth": true
+      },
+      "updateProfile": {
+        "method": "PUT",
+        "path": "/users/profile",
+        "auth": true
+      },
+      "updateAddress": {
+        "method": "PUT",
+        "path": "/users/address",
+        "auth": true
+      },
+      "updatePreferences": {
+        "method": "PUT",
+        "path": "/users/preferences",
+        "auth": true
+      },
+      "deleteAccount": {
+        "method": "DELETE",
+        "path": "/users/account",
+        "auth": true
+      }
+    },
+    "categories": {
+      "getAll": {
+        "method": "GET",
+        "path": "/categories",
+        "auth": false
+      },
+      "getById": {
+        "method": "GET",
+        "path": "/categories/:categoryId",
+        "auth": false
+      },
+      "create": {
+        "method": "POST",
+        "path": "/categories",
+        "auth": true,
+        "role": "admin"
+      }
+    },
+    "shops": {
+      "getAll": {
+        "method": "GET",
+        "path": "/shops",
+        "auth": false,
+        "queryParams": ["page", "limit", "category", "search"]
+      },
+      "getById": {
+        "method": "GET",
+        "path": "/shops/:shopId",
+        "auth": false
+      },
+      "getBySlug": {
+        "method": "GET",
+        "path": "/shops/slug/:slug",
+        "auth": false
+      },
+      "create": {
+        "method": "POST",
+        "path": "/shops",
+        "auth": true
+      },
+      "getMyShops": {
+        "method": "GET",
+        "path": "/shops/my-shops",
+        "auth": true
+      },
+      "update": {
+        "method": "PUT",
+        "path": "/shops/:shopId",
+        "auth": true
+      },
+      "delete": {
+        "method": "DELETE",
+        "path": "/shops/:shopId",
+        "auth": true
+      }
+    },
+    "products": {
+      "getAll": {
+        "method": "GET",
+        "path": "/products",
+        "auth": false,
+        "queryParams": ["page", "limit", "category", "shop", "search", "minPrice", "maxPrice"]
+      },
+      "getById": {
+        "method": "GET",
+        "path": "/products/:productId",
+        "auth": false
+      },
+      "getByShop": {
+        "method": "GET",
+        "path": "/products/shop/:shopId",
+        "auth": false
+      },
+      "create": {
+        "method": "POST",
+        "path": "/products",
+        "auth": true
+      },
+      "update": {
+        "method": "PUT",
+        "path": "/products/:productId",
+        "auth": true
+      },
+      "delete": {
+        "method": "DELETE",
+        "path": "/products/:productId",
+        "auth": true
+      }
+    },
+    "cart": {
+      "get": {
+        "method": "GET",
+        "path": "/carts",
+        "auth": true
+      },
+      "addItem": {
+        "method": "POST",
+        "path": "/carts/items",
+        "auth": true
+      },
+      "updateItemQuantity": {
+        "method": "PUT",
+        "path": "/carts/items/:itemId",
+        "auth": true
+      },
+      "removeItem": {
+        "method": "DELETE",
+        "path": "/carts/items/:itemId",
+        "auth": true
+      },
+      "updateDeliveryFee": {
+        "method": "PUT",
+        "path": "/carts/delivery-fee",
+        "auth": true
+      },
+      "clear": {
+        "method": "DELETE",
+        "path": "/carts",
+        "auth": true
+      },
+      "merge": {
+        "method": "POST",
+        "path": "/carts/merge",
+        "auth": true
+      }
+    },
+    "orders": {
+      "getAll": {
+        "method": "GET",
+        "path": "/orders",
+        "auth": true,
+        "queryParams": ["status", "page", "limit"]
+      },
+      "getById": {
+        "method": "GET",
+        "path": "/orders/:orderId",
+        "auth": true
+      },
+      "create": {
+        "method": "POST",
+        "path": "/orders",
+        "auth": true
+      },
+      "cancel": {
+        "method": "PUT",
+        "path": "/orders/:orderId/cancel",
+        "auth": true
+      },
+      "getByShop": {
+        "method": "GET",
+        "path": "/orders/shop/:shopId",
+        "auth": true
+      }
+    },
+    "payments": {
+      "create": {
+        "method": "POST",
+        "path": "/payments",
+        "auth": true
+      },
+      "getStatus": {
+        "method": "GET",
+        "path": "/payments/:paymentId",
+        "auth": true
+      }
+    },
+    "uploads": {
+      "upload": {
+        "method": "POST",
+        "path": "/uploads",
+        "auth": true,
+        "contentType": "multipart/form-data"
+      },
+      "delete": {
+        "method": "DELETE",
+        "path": "/uploads/:publicId",
+        "auth": true
+      }
+    },
+    "admin": {
+      "stats": {
+        "method": "GET",
+        "path": "/admin/stats",
+        "auth": true,
+        "role": "admin"
+      },
+      "users": {
+        "getAll": {
+          "method": "GET",
+          "path": "/admin/users",
+          "auth": true,
+          "role": "admin",
+          "queryParams": ["role", "limit", "skip"]
+        },
+        "updateRole": {
+          "method": "PUT",
+          "path": "/admin/users/:userId/role",
+          "auth": true,
+          "role": "admin"
+        },
+        "updateStatus": {
+          "method": "PUT",
+          "path": "/admin/users/:userId/status",
+          "auth": true,
+          "role": "admin"
+        },
+        "delete": {
+          "method": "DELETE",
+          "path": "/admin/users/:userId",
+          "auth": true,
+          "role": "admin"
+        }
+      },
+      "shops": {
+        "getAll": {
+          "method": "GET",
+          "path": "/admin/shops",
+          "auth": true,
+          "role": "admin",
+          "queryParams": ["status", "limit", "skip"]
+        },
+        "updateStatus": {
+          "method": "PUT",
+          "path": "/admin/shops/:shopId/status",
+          "auth": true,
+          "role": "admin"
+        },
+        "delete": {
+          "method": "DELETE",
+          "path": "/admin/shops/:shopId",
+          "auth": true,
+          "role": "admin"
+        }
+      },
+      "products": {
+        "getAll": {
+          "method": "GET",
+          "path": "/admin/products",
+          "auth": true,
+          "role": "admin",
+          "queryParams": ["status", "limit", "skip"]
+        },
+        "delete": {
+          "method": "DELETE",
+          "path": "/admin/products/:productId",
+          "auth": true,
+          "role": "admin"
+        }
+      },
+      "orders": {
+        "getAll": {
+          "method": "GET",
+          "path": "/admin/orders",
+          "auth": true,
+          "role": "admin",
+          "queryParams": ["status", "limit", "skip"]
+        },
+        "updateStatus": {
+          "method": "PUT",
+          "path": "/admin/orders/:orderId/status",
+          "auth": true,
+          "role": "admin"
+        }
+      },
+      "settings": {
+        "get": {
+          "method": "GET",
+          "path": "/admin/settings",
+          "auth": true,
+          "role": "admin"
+        },
+        "update": {
+          "method": "PUT",
+          "path": "/admin/settings",
+          "auth": true,
+          "role": "admin"
+        }
+      },
+      "notify": {
+        "method": "POST",
+        "path": "/admin/notify",
+        "auth": true,
+        "role": "admin"
+      }
+    },
+    "drivers": {
+      "getAll": {
+        "method": "GET",
+        "path": "/drivers",
+        "auth": true
+      },
+      "getById": {
+        "method": "GET",
+        "path": "/drivers/:driverId",
+        "auth": true
+      },
+      "create": {
+        "method": "POST",
+        "path": "/drivers",
+        "auth": true
+      },
+      "updateStatus": {
+        "method": "PUT",
+        "path": "/drivers/:driverId/status",
+        "auth": true
+      }
+    }
+  }
+}

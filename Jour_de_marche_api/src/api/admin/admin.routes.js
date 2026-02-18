@@ -125,4 +125,16 @@ router.delete(
   adminController.deleteShop,
 );
 
+/**
+ * @route   PUT /api/admin/shops/:shopId/status
+ * @desc    Update shop status
+ * @access  Private (Admin)
+ */
+router.put(
+  '/shops/:shopId/status',
+  authMiddleware,
+  rolesMiddleware(['admin']),
+  adminController.updateShopStatus,
+);
+
 module.exports = router;

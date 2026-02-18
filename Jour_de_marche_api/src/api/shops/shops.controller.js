@@ -52,7 +52,7 @@ const shopsController = {
   // Create shop
   createShop: async (req, res) => {
     try {
-      const { name, category, description, address, deliveryRadius, deliveryFee, minimumOrder } = req.body;
+      const { name, category, description, address, deliveryRadius, deliveryFee, minimumOrder, status, logo, banner, contact, hours, deliveryOptions, socialMedia } = req.body;
 
       const shop = new Shop({
         name,
@@ -64,6 +64,13 @@ const shopsController = {
         deliveryFee,
         minimumOrder,
         owner: req.user.id,
+        status: status || 'pending', // Accepter le statut, défaut à 'pending'
+        logo,
+        banner,
+        contact,
+        hours,
+        deliveryOptions,
+        socialMedia,
       });
 
       await shop.save();

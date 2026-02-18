@@ -282,3 +282,39 @@ exports.deleteShop = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Update shop status (admin)
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ */
+exports.updateShopStatus = async (req, res, next) => {
+  try {
+    const { shopId } = req.params;
+    const { status } = req.body;
+
+    const shop = await Shop.findByIdAndUpdate(
+      shopId,
+      { status },
+      { new: true, runValidators: true }
+    ).populate('owner', 'firstName lastName email');
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Boutique non trouvée',
+      });
+    }
+
+    logger.info(`✅ Statut boutique mis à jour: ${shopId} -> ${status}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Statut boutique mis à jour',
+      data: shop,
+    });
+  } catch (error) {
+    logger.error(`Erreur mise à jour statut boutique: ${error.message}`);
+    next(error);
+  }
+};

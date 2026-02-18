@@ -18,6 +18,7 @@ router.use('/users', require('./users/users.routes'));
 router.use('/shops', require('./shops/shops.routes'));
 router.use('/categories', require('./categories/categories.routes'));
 router.use('/products', require('./products/products.routes'));
+router.use('/carts', require('./carts/carts.routes'));
 router.use('/orders', require('./orders/orders.routes'));
 router.use('/payments', require('./payments/payments.routes'));
 router.use('/drivers', require('./drivers/drivers.routes'));

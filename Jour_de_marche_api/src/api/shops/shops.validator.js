@@ -43,7 +43,7 @@ const shopsValidators = {
         return true;
       }),
     body('owner')
-      .notEmpty().withMessage('owner requis')
+      .optional()
       .isString(),
     body('deliveryOptions').optional().isArray(),
     body('deliveryRadius').optional().isNumeric().withMessage('Rayon de livraison doit être un nombre'),

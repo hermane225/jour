@@ -196,7 +196,6 @@ const shopsController = {
       });
     }
   },
-};
 
   // Get popular shops
   getPopularShops: async (req, res) => {

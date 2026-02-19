@@ -184,7 +184,9 @@ const cartController = {
         });
       }
 
-      const item = cart.items.id(itemId);
+      const item = cart.items.find(
+        (i) => i.product.toString() === itemId || i._id.toString() === itemId
+      );
       if (!item) {
         return res.status(404).json({
           success: false,
@@ -196,7 +198,7 @@ const cartController = {
       const product = await Product.findById(item.product);
       if (!product) {
         // Produit supprimé, retirer l'item
-        cart.items.pull(itemId);
+        cart.items.pull(item._id);
       } else if (quantity > product.quantity) {
         return res.status(400).json({
           success: false,
@@ -261,7 +263,15 @@ const cartController = {
         });
       }
 
-      cart.items.pull(itemId);
+      // Supprimer par product ID ou par item _id (compatibilité front)
+      const before = cart.items.length;
+      cart.items = cart.items.filter(
+        (i) => i.product.toString() !== itemId && i._id.toString() !== itemId
+      );
+
+      if (cart.items.length === before) {
+        return res.status(404).json({ success: false, message: 'Article non trouvé dans le panier' });
+      }
       cart.calculateTotal();
       await cart.save();
 

@@ -33,6 +33,13 @@ router.get('/', shopsController.getAllShops);
 router.get('/my-shops', authMiddleware, shopsController.getMyShops);
 
 /**
+ * @route   GET /api/shops/popular
+ * @desc    Get popular shops
+ * @access  Public
+ */
+router.get('/popular', shopsController.getPopularShops);
+
+/**
  * @route   GET /api/shops/:shopId
  * @desc    Get shop by ID
  * @access  Public

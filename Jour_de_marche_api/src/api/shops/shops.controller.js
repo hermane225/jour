@@ -52,7 +52,7 @@ const shopsController = {
   // Create shop
   createShop: async (req, res) => {
     try {
-      const { name, category, description, address, deliveryRadius, deliveryFee, minimumOrder, status, logo, banner, contact, hours, deliveryOptions, socialMedia } = req.body;
+      const { name, category, description, address, deliveryRadius, deliveryFee, minimumOrder, status, logo, banner, contact, hours, deliveryOptions, socialMedia, phone } = req.body;
 
       const shop = new Shop({
         name,
@@ -64,10 +64,11 @@ const shopsController = {
         deliveryFee,
         minimumOrder,
         owner: req.user.id,
-        status: status || 'active', // Accepter le statut, défaut à 'active'
+        status: status || 'active',
         logo,
         banner,
-        contact,
+        // Fusionner phone (champ direct) et contact (objet)
+        contact: contact || (phone ? { phone } : undefined),
         hours,
         deliveryOptions,
         socialMedia,
@@ -193,6 +194,24 @@ const shopsController = {
         message: 'Erreur lors de la mise à jour de la boutique',
         error: error.message,
       });
+    }
+  },
+};
+
+  // Get popular shops
+  getPopularShops: async (req, res) => {
+    try {
+      const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+      const shops = await Shop.find({ status: 'active' })
+        .populate('owner', 'firstName lastName email')
+        .populate('category', 'name slug')
+        .sort({ 'rating.average': -1, 'stats.totalOrders': -1, createdAt: -1 })
+        .limit(limit);
+
+      res.json({ success: true, data: shops });
+    } catch (error) {
+      logger.error('Erreur getPopularShops:', error.message);
+      res.status(500).json({ success: false, message: 'Erreur lors de la récupération des boutiques populaires' });
     }
   },
 };

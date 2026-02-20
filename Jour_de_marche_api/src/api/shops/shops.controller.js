@@ -55,9 +55,19 @@ const shopsController = {
 
   // Create shop
   createShop: async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Utilisateur non authentifié'
+      });
+    }
+
     const requestId = uuidv4();
 
     try {
+      console.log('USER:', req.user);
+      console.log('BODY:', req.body);
+
       const {
         name, category, description, address, deliveryRadius,
         deliveryFee, minimumOrder, status, logo, banner,
@@ -101,7 +111,7 @@ const shopsController = {
         name,
         slug: name.toLowerCase().replace(/\s+/g, '-'),
         category,
-        owner: req.user.id,
+        owner: req.user._id || req.user.id,
         status: status || 'active',
       };
 
@@ -156,6 +166,8 @@ const shopsController = {
         requestId,
       });
     } catch (error) {
+      console.error('CREATE SHOP ERROR:', error);
+
       // Gérer les erreurs de validation Mongoose
       if (error.name === 'ValidationError') {
         const details = {};

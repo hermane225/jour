@@ -53,8 +53,12 @@ app.use(rateLimiter);
 // Routes
 // Route racine
 const path = require('path');
+
+// Servir les fichiers uploadés (images logo, banner, etc.)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Bienvenue sur l’API Jour de Marche !' });
+  res.status(200).json({ message: 'Bienvenue sur l\'API Jour de Marche !' });
 });
 
 // Route favicon.ico

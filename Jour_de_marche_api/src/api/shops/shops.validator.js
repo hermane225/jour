@@ -96,7 +96,7 @@ const shopsValidators = {
   ],
 
   update: [
-    body('name').optional().isLength({ min: 2 }),
+    body('name').optional().isLength({ min: 2 }).withMessage('Nom minimum 2 caractères'),
     body('category')
       .optional()
       .isMongoId().withMessage('Category must be a valid ObjectId')
@@ -112,11 +112,13 @@ const shopsValidators = {
       }),
     body('description').optional().trim(),
     body('logo').optional().isString(),
+    body('banner').optional().isString(),
     body('phone')
       .optional()
       .isString()
       .matches(/^[\d\s\-+()]+$/)
       .withMessage('Invalid phone format - must contain only digits, spaces, and +()-'),
+    body('contact').optional().isObject(),
     body('address').optional().isObject().withMessage('Adresse doit être un objet'),
     body('address.street').optional().isString(),
     body('address.city').optional().isString(),
@@ -139,7 +141,6 @@ const shopsValidators = {
         if (typeof value[0] !== 'number' || typeof value[1] !== 'number') {
           throw new Error('Les coordonnées doivent être des nombres');
         }
-        // Validate longitude (-180 to 180) and latitude (-90 to 90)
         if (value[0] < -180 || value[0] > 180) {
           throw new Error('La longitude doit être entre -180 et 180');
         }
@@ -148,7 +149,8 @@ const shopsValidators = {
         }
         return true;
       }),
-    body('owner').optional().isString(),
+    body('hours').optional().isObject(),
+    body('socialMedia').optional().isObject(),
     body('deliveryOptions')
       .optional()
       .isArray()
@@ -172,6 +174,10 @@ const shopsValidators = {
       .optional()
       .isFloat({ min: 0 })
       .withMessage('Minimum order must be a number >= 0'),
+    body('status')
+      .optional()
+      .isIn(['active', 'inactive', 'suspended', 'pending'])
+      .withMessage('Statut invalide'),
   ],
 };
 

@@ -299,7 +299,11 @@ const shopsController = {
   updateShop: async (req, res) => {
     try {
       const { shopId } = req.params;
-      const updates = req.body;
+      const updates = { ...req.body };
+
+      // Empêcher la modification de champs sensibles
+      const forbiddenFields = ['owner', 'rating', 'stats', '_id', 'createdAt'];
+      forbiddenFields.forEach((field) => delete updates[field]);
 
       // Check if user owns the shop
       const shop = await Shop.findById(shopId);
@@ -310,7 +314,8 @@ const shopsController = {
         });
       }
 
-      if (shop.owner.toString() !== req.user.id) {
+      const userId = req.user._id || req.user.id;
+      if (shop.owner.toString() !== userId.toString()) {
         return res.status(403).json({
           success: false,
           message: 'Vous n\'êtes pas autorisé à modifier cette boutique',
@@ -320,6 +325,25 @@ const shopsController = {
       // Update slug if name changed
       if (updates.name && updates.name !== shop.name) {
         updates.slug = updates.name.toLowerCase().replace(/\s+/g, '-');
+      }
+
+      // Sanitiser les coordonnées si une adresse est fournie
+      if (updates.address) {
+        if (
+          !updates.address.coordinates
+          || !Array.isArray(updates.address.coordinates.coordinates)
+          || updates.address.coordinates.coordinates.length !== 2
+        ) {
+          delete updates.address.coordinates;
+        }
+      }
+
+      // Gérer le champ contact de manière robuste
+      if (updates.contact && typeof updates.contact === 'object') {
+        // ok
+      } else if (updates.phone) {
+        updates.contact = { phone: updates.phone };
+        delete updates.phone;
       }
 
       const updatedShop = await Shop.findByIdAndUpdate(
@@ -339,10 +363,32 @@ const shopsController = {
       });
     } catch (error) {
       logger.error('Erreur lors de la mise à jour de la boutique:', error);
+
+      if (error.name === 'ValidationError') {
+        const details = {};
+        Object.keys(error.errors).forEach((field) => {
+          details[field] = [error.errors[field].message];
+        });
+        return res.status(422).json({
+          success: false,
+          message: 'Validation failed',
+          code: 'VALIDATION_ERROR',
+          details,
+        });
+      }
+
+      if (error.code === 11000) {
+        const field = Object.keys(error.keyPattern)[0];
+        return res.status(409).json({
+          success: false,
+          message: `Une boutique avec ce ${field} existe déjà`,
+          code: 'DUPLICATE_ERROR',
+        });
+      }
+
       res.status(500).json({
         success: false,
         message: 'Erreur lors de la mise à jour de la boutique',
-        error: error.message,
       });
     }
     return null;

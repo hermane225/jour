@@ -38,8 +38,8 @@ const shopSchema = new mongoose.Schema(
       zipCode: String,
       country: String,
       coordinates: {
-        type: { type: String, enum: ['Point'], default: 'Point' },
-        coordinates: [Number],
+        type: { type: String, enum: ['Point'] },
+        coordinates: { type: [Number] },
       },
     },
     contact: {
@@ -101,6 +101,6 @@ const shopSchema = new mongoose.Schema(
 );
 
 // Indexer les coordonnées géographiques
-shopSchema.index({ 'address.coordinates': '2dsphere' });
+shopSchema.index({ 'address.coordinates': '2dsphere' }, { sparse: true });
 
 module.exports = mongoose.model('Shop', shopSchema);

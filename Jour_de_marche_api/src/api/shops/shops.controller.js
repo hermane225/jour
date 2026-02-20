@@ -117,7 +117,18 @@ const shopsController = {
 
       // Ajouter les champs optionnels seulement s'ils sont définis
       if (description) shopData.description = description;
-      if (address) shopData.address = address;
+      if (address) {
+        // Ne conserver les coordonnées que si elles sont valides (tableau de 2 nombres)
+        const sanitizedAddress = { ...address };
+        if (
+          !address.coordinates
+          || !Array.isArray(address.coordinates.coordinates)
+          || address.coordinates.coordinates.length !== 2
+        ) {
+          delete sanitizedAddress.coordinates;
+        }
+        shopData.address = sanitizedAddress;
+      }
       if (deliveryRadius !== undefined) shopData.deliveryRadius = deliveryRadius;
       if (deliveryFee !== undefined) shopData.deliveryFee = deliveryFee;
       if (minimumOrder !== undefined) shopData.minimumOrder = minimumOrder;

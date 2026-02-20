@@ -54,28 +54,46 @@ const shopsController = {
     try {
       const { name, category, description, address, deliveryRadius, deliveryFee, minimumOrder, status, logo, banner, contact, hours, deliveryOptions, socialMedia, phone } = req.body;
 
-      const shop = new Shop({
+      // Préparer les données de la boutique en filtrant les valeurs undefined
+      const shopData = {
         name,
         slug: name.toLowerCase().replace(/\s+/g, '-'),
         category,
-        description,
-        address,
-        deliveryRadius,
-        deliveryFee,
-        minimumOrder,
         owner: req.user.id,
         status: status || 'active',
-        logo,
-        banner,
-        // Fusionner phone (champ direct) et contact (objet)
-        contact: contact || (phone ? { phone } : undefined),
-        hours,
-        deliveryOptions,
-        socialMedia,
-      });
+      };
+
+      // Ajouter les champs optionnels seulement s'ils sont définis
+      if (description) shopData.description = description;
+      if (address) shopData.address = address;
+      if (deliveryRadius !== undefined) shopData.deliveryRadius = deliveryRadius;
+      if (deliveryFee !== undefined) shopData.deliveryFee = deliveryFee;
+      if (minimumOrder !== undefined) shopData.minimumOrder = minimumOrder;
+      if (logo) shopData.logo = logo;
+      if (banner) shopData.banner = banner;
+      if (hours) shopData.hours = hours;
+      if (deliveryOptions) shopData.deliveryOptions = deliveryOptions;
+      if (socialMedia) shopData.socialMedia = socialMedia;
+
+      // Gérer le champ contact de manière robuste
+      if (contact && typeof contact === 'object') {
+        shopData.contact = contact;
+      } else if (phone) {
+        shopData.contact = { phone };
+      }
+
+      const shop = new Shop(shopData);
 
       await shop.save();
-      await shop.populate('owner', 'firstName lastName email');
+      
+      // Populate avec gestion d'erreur
+      try {
+        await shop.populate('owner', 'firstName lastName email');
+        await shop.populate('category', 'name slug');
+      } catch (populateError) {
+        logger.warn('Erreur lors du populate:', populateError.message);
+        // Continue même si le populate échoue
+      }
 
       logger.info(`✅ Boutique créée: ${name}`);
 
@@ -87,11 +105,33 @@ const shopsController = {
     } catch (error) {
       logger.error('Erreur lors de la création de la boutique:', error);
 
+      // Gérer les erreurs de validation Mongoose
+      if (error.name === 'ValidationError') {
+        const validationErrors = {};
+        Object.keys(error.errors).forEach((field) => {
+          validationErrors[field] = error.errors[field].message;
+        });
+        return res.status(400).json({
+          success: false,
+          message: 'Erreur de validation',
+          errors: validationErrors,
+        });
+      }
+
+      // Gérer les erreurs de duplication (clé unique)
+      if (error.code === 11000) {
+        const field = Object.keys(error.keyPattern)[0];
+        return res.status(409).json({
+          success: false,
+          message: `Une boutique avec ce ${field} existe déjà`,
+          error: error.message,
+        });
+      }
+
       res.status(500).json({
         success: false,
         message: 'Erreur lors de la création de la boutique',
         error: error.message,
-        errors: error.errors || null  // si c’est une ValidationError Mongoose
       });
     }
   },

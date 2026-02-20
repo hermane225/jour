@@ -4,13 +4,21 @@ const validationMiddleware = (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    return res.status(400).json({
+    // Grouper les erreurs par champ
+    const details = {};
+    errors.array().forEach(err => {
+      const field = err.param || err.path || 'unknown';
+      if (!details[field]) {
+        details[field] = [];
+      }
+      details[field].push(err.msg);
+    });
+
+    return res.status(422).json({
       success: false,
-      message: 'Erreur de validation',
-      errors: errors.array().map(err => ({
-        field: err.param,
-        message: err.msg,
-      })),
+      message: 'Validation failed',
+      code: 'VALIDATION_ERROR',
+      details,
     });
   }
 

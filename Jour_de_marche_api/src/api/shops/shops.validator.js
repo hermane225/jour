@@ -1,17 +1,36 @@
 const { body } = require('express-validator');
+const Category = require('../../models/Category');
 
 const shopsValidators = {
   create: [
     body('name')
-      .notEmpty().withMessage('Nom requis')
-      .isLength({ min: 2 }).withMessage('Nom minimum 2 caractères'),
+      .notEmpty()
+      .withMessage('Nom requis')
+      .isLength({ min: 2 })
+      .withMessage('Nom minimum 2 caractères'),
     body('category')
-      .notEmpty().withMessage('Catégorie requise')
-      .isMongoId().withMessage('Catégorie invalide'),
+      .notEmpty()
+      .withMessage('Catégorie requise')
+      .isMongoId()
+      .withMessage('Category must be a valid ObjectId')
+      .custom(async (value) => {
+        const category = await Category.findById(value);
+        if (!category) {
+          throw new Error('Category does not exist');
+        }
+        if (category.status !== 'active') {
+          throw new Error('Category is not active');
+        }
+        return true;
+      }),
     body('description').optional({ nullable: true, checkFalsy: false }).trim(),
     body('logo').optional({ nullable: true, checkFalsy: false }).isString(),
     body('banner').optional({ nullable: true, checkFalsy: false }).isString(),
-    body('phone').optional({ nullable: true, checkFalsy: false }).isString(),
+    body('phone')
+      .optional({ nullable: true, checkFalsy: false })
+      .isString()
+      .matches(/^[\d\s\-+()]+$/)
+      .withMessage('Invalid phone format - must contain only digits, spaces, and +()-'),
     body('contact').optional({ nullable: true, checkFalsy: false }).isObject(),
     body('address').optional({ nullable: true, checkFalsy: false }).isObject().withMessage('Adresse doit être un objet'),
     body('address.street').optional({ nullable: true, checkFalsy: false }).isString(),
@@ -50,19 +69,54 @@ const shopsValidators = {
       .isString(),
     body('hours').optional({ nullable: true, checkFalsy: false }).isObject(),
     body('socialMedia').optional({ nullable: true, checkFalsy: false }).isObject(),
-    body('deliveryOptions').optional({ nullable: true, checkFalsy: false }).isArray(),
-    body('deliveryRadius').optional({ nullable: true, checkFalsy: false }).isNumeric().withMessage('Rayon de livraison doit être un nombre'),
-    body('deliveryFee').optional({ nullable: true, checkFalsy: false }).isNumeric().withMessage('Frais de livraison doit être un nombre'),
-    body('minimumOrder').optional({ nullable: true, checkFalsy: false }).isNumeric().withMessage('Commande minimum doit être un nombre'),
+    body('deliveryOptions')
+      .optional({ nullable: true, checkFalsy: false })
+      .isArray()
+      .withMessage('Delivery options must be an array')
+      .custom((value) => {
+        const allowedOptions = ['livraison locale', 'retrait en magasin', 'livraison nationale'];
+        if (value && !value.every((option) => allowedOptions.includes(option))) {
+          throw new Error(`Delivery options must be one of: ${allowedOptions.join(', ')}`);
+        }
+        return true;
+      }),
+    body('deliveryRadius')
+      .optional({ nullable: true, checkFalsy: false })
+      .isFloat({ min: 0 })
+      .withMessage('Delivery radius must be a number >= 0'),
+    body('deliveryFee')
+      .optional({ nullable: true, checkFalsy: false })
+      .isFloat({ min: 0 })
+      .withMessage('Delivery fee must be a number >= 0'),
+    body('minimumOrder')
+      .optional({ nullable: true, checkFalsy: false })
+      .isFloat({ min: 0 })
+      .withMessage('Minimum order must be a number >= 0'),
     body('status').optional({ nullable: true, checkFalsy: false }).isIn(['active', 'inactive', 'suspended', 'pending']).withMessage('Statut invalide'),
   ],
 
   update: [
     body('name').optional().isLength({ min: 2 }),
-    body('category').optional().isMongoId().withMessage('Catégorie invalide'),
+    body('category')
+      .optional()
+      .isMongoId().withMessage('Category must be a valid ObjectId')
+      .custom(async (value) => {
+        const category = await Category.findById(value);
+        if (!category) {
+          throw new Error('Category does not exist');
+        }
+        if (category.status !== 'active') {
+          throw new Error('Category is not active');
+        }
+        return true;
+      }),
     body('description').optional().trim(),
     body('logo').optional().isString(),
-    body('phone').optional().isString(),
+    body('phone')
+      .optional()
+      .isString()
+      .matches(/^[\d\s\-+()]+$/)
+      .withMessage('Invalid phone format - must contain only digits, spaces, and +()-'),
     body('address').optional().isObject().withMessage('Adresse doit être un objet'),
     body('address.street').optional().isString(),
     body('address.city').optional().isString(),
@@ -95,10 +149,29 @@ const shopsValidators = {
         return true;
       }),
     body('owner').optional().isString(),
-    body('deliveryOptions').optional().isArray(),
-    body('deliveryRadius').optional().isNumeric().withMessage('Rayon de livraison doit être un nombre'),
-    body('deliveryFee').optional().isNumeric().withMessage('Frais de livraison doit être un nombre'),
-    body('minimumOrder').optional().isNumeric().withMessage('Commande minimum doit être un nombre'),
+    body('deliveryOptions')
+      .optional()
+      .isArray()
+      .withMessage('Delivery options must be an array')
+      .custom((value) => {
+        const allowedOptions = ['livraison locale', 'retrait en magasin', 'livraison nationale'];
+        if (value && !value.every((option) => allowedOptions.includes(option))) {
+          throw new Error(`Delivery options must be one of: ${allowedOptions.join(', ')}`);
+        }
+        return true;
+      }),
+    body('deliveryRadius')
+      .optional()
+      .isFloat({ min: 0 })
+      .withMessage('Delivery radius must be a number >= 0'),
+    body('deliveryFee')
+      .optional()
+      .isFloat({ min: 0 })
+      .withMessage('Delivery fee must be a number >= 0'),
+    body('minimumOrder')
+      .optional()
+      .isFloat({ min: 0 })
+      .withMessage('Minimum order must be a number >= 0'),
   ],
 };
 

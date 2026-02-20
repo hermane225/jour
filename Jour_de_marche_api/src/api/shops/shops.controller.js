@@ -1,14 +1,18 @@
+const { v4: uuidv4 } = require('uuid');
 const Shop = require('../../models/Shop');
+const Category = require('../../models/Category');
 const logger = require('../../../config/logger');
 
 const shopsController = {
   // Get all shops
   getAllShops: async (req, res) => {
     try {
-      const { page = 1, limit = 10, category, lat, lon, radius = 10 } = req.query;
+      const {
+        page = 1, limit = 10, category, lat, lon, radius = 10,
+      } = req.query;
       const skip = (page - 1) * limit;
 
-      let filter = { status: 'active' };
+      const filter = { status: 'active' };
       if (category) filter.category = category;
 
       let shops = await Shop.find(filter)
@@ -35,8 +39,8 @@ const shopsController = {
         data: shops,
         pagination: {
           total,
-          page: parseInt(page),
-          limit: parseInt(limit),
+          page: parseInt(page, 10),
+          limit: parseInt(limit, 10),
           pages: Math.ceil(total / limit),
         },
       });
@@ -51,8 +55,46 @@ const shopsController = {
 
   // Create shop
   createShop: async (req, res) => {
+    const requestId = uuidv4();
+
     try {
-      const { name, category, description, address, deliveryRadius, deliveryFee, minimumOrder, status, logo, banner, contact, hours, deliveryOptions, socialMedia, phone } = req.body;
+      const {
+        name, category, description, address, deliveryRadius,
+        deliveryFee, minimumOrder, status, logo, banner,
+        contact, hours, deliveryOptions, socialMedia, phone,
+      } = req.body;
+
+      // Vérification de l'existence de la catégorie (double check après validation)
+      const categoryExists = await Category.findById(category);
+      if (!categoryExists) {
+        logger.warn({
+          message: 'Tentative de création de boutique avec catégorie inexistante',
+          requestId,
+          userId: req.user.id,
+          category,
+        });
+        return res.status(404).json({
+          success: false,
+          message: 'Category not found',
+          code: 'CATEGORY_NOT_FOUND',
+          requestId,
+        });
+      }
+
+      if (categoryExists.status !== 'active') {
+        logger.warn({
+          message: 'Tentative de création de boutique avec catégorie inactive',
+          requestId,
+          userId: req.user.id,
+          category,
+        });
+        return res.status(422).json({
+          success: false,
+          message: 'Category is not active',
+          code: 'CATEGORY_INACTIVE',
+          requestId,
+        });
+      }
 
       // Préparer les données de la boutique en filtrant les valeurs undefined
       const shopData = {
@@ -91,49 +133,93 @@ const shopsController = {
         await shop.populate('owner', 'firstName lastName email');
         await shop.populate('category', 'name slug');
       } catch (populateError) {
-        logger.warn('Erreur lors du populate:', populateError.message);
+        logger.warn({
+          message: 'Erreur lors du populate',
+          requestId,
+          error: populateError.message,
+        });
         // Continue même si le populate échoue
       }
 
-      logger.info(`✅ Boutique créée: ${name}`);
+      logger.info({
+        message: '✅ Boutique créée avec succès',
+        requestId,
+        shopName: name,
+        shopId: shop._id,
+        userId: req.user.id,
+      });
 
       res.status(201).json({
         success: true,
         message: 'Boutique créée avec succès',
         data: shop,
+        requestId,
       });
     } catch (error) {
-      logger.error('Erreur lors de la création de la boutique:', error);
-
       // Gérer les erreurs de validation Mongoose
       if (error.name === 'ValidationError') {
-        const validationErrors = {};
+        const details = {};
         Object.keys(error.errors).forEach((field) => {
-          validationErrors[field] = error.errors[field].message;
+          details[field] = [error.errors[field].message];
         });
-        return res.status(400).json({
+        
+        logger.warn({
+          message: 'Erreur de validation Mongoose lors de la création de boutique',
+          requestId,
+          userId: req.user?.id,
+          details,
+        });
+
+        return res.status(422).json({
           success: false,
-          message: 'Erreur de validation',
-          errors: validationErrors,
+          message: 'Validation failed',
+          code: 'VALIDATION_ERROR',
+          details,
+          requestId,
         });
       }
 
       // Gérer les erreurs de duplication (clé unique)
       if (error.code === 11000) {
         const field = Object.keys(error.keyPattern)[0];
+        
+        logger.warn({
+          message: 'Tentative de création de boutique avec duplication',
+          requestId,
+          userId: req.user?.id,
+          field,
+          value: error.keyValue,
+        });
+
         return res.status(409).json({
           success: false,
           message: `Une boutique avec ce ${field} existe déjà`,
-          error: error.message,
+          code: 'DUPLICATE_ERROR',
+          details: {
+            [field]: [`A shop with this ${field} already exists`],
+          },
+          requestId,
         });
       }
 
+      // Erreur serveur générique
+      logger.error({
+        message: 'Erreur serveur lors de la création de boutique',
+        requestId,
+        userId: req.user?.id,
+        error: error.message,
+        stack: error.stack,
+        payload: req.body,
+      });
+
       res.status(500).json({
         success: false,
-        message: 'Erreur lors de la création de la boutique',
-        error: error.message,
+        message: 'An unexpected error occurred while creating the shop',
+        code: 'INTERNAL_SERVER_ERROR',
+        requestId,
       });
     }
+    return null;
   },
 
   // Get user's shops (for dashboard)
@@ -183,6 +269,7 @@ const shopsController = {
         message: 'Erreur lors de la récupération de la boutique',
       });
     }
+    return null;
   },
 
   // Update shop
@@ -215,7 +302,7 @@ const shopsController = {
       const updatedShop = await Shop.findByIdAndUpdate(
         shopId,
         { $set: updates },
-        { new: true, runValidators: true }
+        { new: true, runValidators: true },
       )
         .populate('owner', 'firstName lastName email')
         .populate('category', 'name slug');
@@ -235,12 +322,13 @@ const shopsController = {
         error: error.message,
       });
     }
+    return null;
   },
 
   // Get popular shops
   getPopularShops: async (req, res) => {
     try {
-      const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+      const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
       const shops = await Shop.find({ status: 'active' })
         .populate('owner', 'firstName lastName email')
         .populate('category', 'name slug')

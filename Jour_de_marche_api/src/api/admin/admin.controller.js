@@ -1,8 +1,11 @@
+const path = require('path');
+const fs = require('fs');
 const PlatformSetting = require('../../models/PlatformSetting');
 const User = require('../../models/User');
 const Order = require('../../models/Order');
 const Shop = require('../../models/Shop');
 const Product = require('../../models/Product');
+const config = require('../../../config');
 const logger = require('../../../config/logger');
 
 /**
@@ -485,6 +488,167 @@ exports.updateUserStatus = async (req, res, next) => {
     });
   } catch (error) {
     logger.error(`Erreur mise à jour statut utilisateur: ${error.message}`);
+    return next(error);
+  }
+};
+
+// =====================
+// Diagnostic uploads
+// =====================
+
+/**
+ * Diagnostic des chemins d'upload
+ * Vérifie que multer et express.static utilisent le même dossier
+ */
+exports.diagnosticUploads = async (req, res, next) => {
+  try {
+    const configPath = config.storage.path;
+    const resolvedPath = path.resolve(configPath);
+
+    // Lister les fichiers dans le dossier d'upload
+    let filesCount = 0;
+    let subfolders = [];
+    let sampleFiles = [];
+
+    if (fs.existsSync(resolvedPath)) {
+      const entries = fs.readdirSync(resolvedPath, { withFileTypes: true });
+      subfolders = entries.filter(e => e.isDirectory()).map(e => e.name);
+      const files = entries.filter(e => e.isFile()).map(e => e.name);
+      filesCount = files.length;
+
+      // Compter les fichiers dans les sous-dossiers
+      for (const folder of subfolders) {
+        const folderPath = path.join(resolvedPath, folder);
+        try {
+          const folderFiles = fs.readdirSync(folderPath);
+          filesCount += folderFiles.length;
+          sampleFiles.push(...folderFiles.slice(0, 3).map(f => `${folder}/${f}`));
+        } catch (e) { /* ignore */ }
+      }
+    }
+
+    // Vérifier les URLs en DB
+    const shopsWithLogo = await Shop.countDocuments({ logo: { $exists: true, $ne: null, $ne: '' } });
+    const shopsWithBanner = await Shop.countDocuments({ banner: { $exists: true, $ne: null, $ne: '' } });
+    const productsWithImages = await Product.countDocuments({ images: { $exists: true, $not: { $size: 0 } } });
+
+    // Vérifier les fichiers manquants (échantillon)
+    const brokenShops = [];
+    const shopsToCheck = await Shop.find({ logo: { $exists: true, $ne: null, $ne: '' } }).limit(10).lean();
+    for (const shop of shopsToCheck) {
+      if (shop.logo) {
+        const filePath = path.join(resolvedPath, shop.logo.replace('/uploads/', ''));
+        if (!fs.existsSync(filePath)) {
+          brokenShops.push({ id: shop._id, name: shop.name, logo: shop.logo, exists: false });
+        }
+      }
+    }
+
+    const brokenProducts = [];
+    const productsToCheck = await Product.find({ images: { $exists: true, $not: { $size: 0 } } }).limit(10).lean();
+    for (const product of productsToCheck) {
+      for (const img of (product.images || [])) {
+        const filePath = path.join(resolvedPath, img.replace('/uploads/', ''));
+        if (!fs.existsSync(filePath)) {
+          brokenProducts.push({ id: product._id, name: product.name, image: img, exists: false });
+        }
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Diagnostic uploads',
+      data: {
+        config: {
+          UPLOAD_DIR_env: process.env.UPLOAD_DIR || '(non défini)',
+          STORAGE_PATH_env: process.env.STORAGE_PATH || '(non défini)',
+          configStoragePath: configPath,
+          resolvedAbsolutePath: resolvedPath,
+          cwd: process.cwd(),
+          dirExists: fs.existsSync(resolvedPath),
+        },
+        files: {
+          totalFiles: filesCount,
+          subfolders,
+          sampleFiles: sampleFiles.slice(0, 10),
+        },
+        database: {
+          shopsWithLogo,
+          shopsWithBanner,
+          productsWithImages,
+        },
+        broken: {
+          shops: brokenShops,
+          products: brokenProducts,
+          note: 'Échantillon limité à 10 entrées',
+        },
+      },
+    });
+  } catch (error) {
+    logger.error(`Erreur diagnostic uploads: ${error.message}`);
+    return next(error);
+  }
+};
+
+/**
+ * Réécrire les URLs des images en DB
+ * Remplace un ancien préfixe d'URL par un nouveau
+ * Body: { oldPrefix: string, newPrefix: string, dryRun: boolean }
+ */
+exports.migrateUploadUrls = async (req, res, next) => {
+  try {
+    const { oldPrefix, newPrefix, dryRun = true } = req.body;
+
+    if (!oldPrefix || !newPrefix) {
+      return res.status(400).json({
+        success: false,
+        message: 'oldPrefix et newPrefix sont requis',
+      });
+    }
+
+    const results = { shops: { logo: 0, banner: 0 }, products: { images: 0 }, dryRun };
+
+    // --- Shops ---
+    const shopsLogo = await Shop.find({ logo: { $regex: oldPrefix } });
+    for (const shop of shopsLogo) {
+      const newUrl = shop.logo.replace(oldPrefix, newPrefix);
+      if (!dryRun) {
+        shop.logo = newUrl;
+        await shop.save();
+      }
+      results.shops.logo++;
+    }
+
+    const shopsBanner = await Shop.find({ banner: { $regex: oldPrefix } });
+    for (const shop of shopsBanner) {
+      const newUrl = shop.banner.replace(oldPrefix, newPrefix);
+      if (!dryRun) {
+        shop.banner = newUrl;
+        await shop.save();
+      }
+      results.shops.banner++;
+    }
+
+    // --- Products ---
+    const products = await Product.find({ images: { $regex: oldPrefix } });
+    for (const product of products) {
+      const newImages = product.images.map(img =>
+        img.includes(oldPrefix) ? img.replace(oldPrefix, newPrefix) : img
+      );
+      if (!dryRun) {
+        product.images = newImages;
+        await product.save();
+      }
+      results.products.images += product.images.filter(img => img.includes(oldPrefix)).length;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: dryRun ? 'Simulation terminée (aucune modification)' : 'Migration effectuée',
+      data: results,
+    });
+  } catch (error) {
+    logger.error(`Erreur migration URLs: ${error.message}`);
     return next(error);
   }
 };

@@ -14,6 +14,12 @@ try {
       const uploadDir = path.resolve(config.storage.path);
       fs.mkdirSync(uploadDir, { recursive: true });
       logger.info(`UPLOAD_DIR ready: ${uploadDir}`);
+      logger.info(`config.storage.path (raw): ${config.storage.path}`);
+      logger.info(`config.storage.path (resolved): ${uploadDir}`);
+      logger.info(`CWD: ${process.cwd()}`);
+      logger.info(`NODE_ENV: ${config.nodeEnv}`);
+      logger.info(`express.static servira /uploads depuis: ${uploadDir}`);
+      logger.info(`multer écrira dans: ${uploadDir}/{userId}/`);
 
       try {
         await connectDB();

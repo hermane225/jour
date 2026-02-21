@@ -201,4 +201,29 @@ router.put(
   adminController.updateUserStatus,
 );
 
+/**
+ * @route   GET /api/admin/uploads/diagnostic
+ * @desc    Diagnostic des chemins d'upload (multer vs express.static)
+ * @access  Private (Admin)
+ */
+router.get(
+  '/uploads/diagnostic',
+  authMiddleware,
+  rolesMiddleware(['admin']),
+  adminController.diagnosticUploads,
+);
+
+/**
+ * @route   POST /api/admin/uploads/migrate-urls
+ * @desc    Migrer les URLs d'images en DB (oldPrefix -> newPrefix)
+ * @access  Private (Admin)
+ * @body    { oldPrefix: string, newPrefix: string, dryRun: boolean }
+ */
+router.post(
+  '/uploads/migrate-urls',
+  authMiddleware,
+  rolesMiddleware(['admin']),
+  adminController.migrateUploadUrls,
+);
+
 module.exports = router;

@@ -4,10 +4,18 @@ const { v4: uuidv4 } = require('uuid');
 const config = require('../../config');
 const logger = require('../../config/logger');
 
+// Toujours résoudre le chemin absolu pour cohérence avec express.static
+const RESOLVED_UPLOAD_DIR = path.resolve(config.storage.path);
+
 const storageService = {
+  /**
+   * Retourne le chemin absolu utilisé pour les uploads
+   */
+  getUploadDir: () => RESOLVED_UPLOAD_DIR,
+
   saveFile: async (file, folder = 'general') => {
     try {
-      const uploadDir = path.join(config.storage.path, folder);
+      const uploadDir = path.join(RESOLVED_UPLOAD_DIR, folder);
       
       // Create directory if not exists
       await fs.mkdir(uploadDir, { recursive: true });
@@ -31,7 +39,7 @@ const storageService = {
 
   deleteFile: async (filePath) => {
     try {
-      const fullPath = path.join(config.storage.path, filePath.replace('/uploads/', ''));
+      const fullPath = path.join(RESOLVED_UPLOAD_DIR, filePath.replace('/uploads/', ''));
       await fs.unlink(fullPath);
       logger.info(`✅ Fichier supprimé: ${filePath}`);
       return true;
@@ -43,7 +51,7 @@ const storageService = {
 
   getFile: async (filePath) => {
     try {
-      const fullPath = path.join(config.storage.path, filePath.replace('/uploads/', ''));
+      const fullPath = path.join(RESOLVED_UPLOAD_DIR, filePath.replace('/uploads/', ''));
       return await fs.readFile(fullPath);
     } catch (error) {
       logger.error('❌ Erreur lors de la lecture du fichier:', error.message);

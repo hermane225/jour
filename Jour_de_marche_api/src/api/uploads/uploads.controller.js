@@ -1,166 +1,184 @@
 const path = require('path');
 const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
+const Shop = require('../../models/Shop');
+const Product = require('../../models/Product');
 const logger = require('../../../config/logger');
+const config = require('../../../config');
 
-/**
- * Upload file
- * @param {Object} req - Express request
- * @param {Object} res - Express response
- */
+const getUserUploadDir = (userId) => path.join(path.resolve(config.storage.path), String(userId));
+const toRelativeUploadUrl = (userId, filename) => `/uploads/${userId}/${filename}`;
+
+const persistUploadUrl = async ({ userId, body, urls }) => {
+  const { shopId, productId, field } = body || {};
+
+  if (!field || (!shopId && !productId)) {
+    return;
+  }
+
+  if (shopId) {
+    if (!['logo', 'banner'].includes(field)) {
+      return;
+    }
+
+    const shop = await Shop.findOne({ _id: shopId, owner: userId });
+    if (!shop) {
+      throw new Error('Boutique introuvable ou non autorisee');
+    }
+
+    shop[field] = urls[0] || shop[field];
+    await shop.save();
+    return;
+  }
+
+  if (productId) {
+    if (field !== 'images') {
+      return;
+    }
+
+    const product = await Product.findById(productId).populate('shop', 'owner');
+    if (!product || String(product.shop?.owner) !== String(userId)) {
+      throw new Error('Produit introuvable ou non autorise');
+    }
+
+    product.images = Array.isArray(product.images) ? [...product.images, ...urls] : [...urls];
+    await product.save();
+  }
+};
+
 exports.uploadFile = async (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: 'Aucun fichier uploadé',
+        message: 'Aucun fichier uploade',
       });
     }
 
-    const { file } = req;
-    const fileId = uuidv4();
-    const uploadDir = path.join(__dirname, '../../../uploads', req.user.id);
+    const userId = String(req.user.id || req.user._id);
+    const fileUrl = toRelativeUploadUrl(userId, req.file.filename);
 
-    // Create user upload directory if it doesn't exist
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
+    await persistUploadUrl({
+      userId,
+      body: req.body,
+      urls: [fileUrl],
+    });
 
-    const ext = path.extname(file.originalname);
-    const filename = `${fileId}${ext}`;
-    const filepath = path.join(uploadDir, filename);
-
-    // Move file to upload directory
-    fs.copyFileSync(file.path, filepath);
-    fs.unlinkSync(file.path);
-
-    const fileUrl = `/uploads/${req.user.id}/${filename}`;
-
-    logger.info(`✅ Fichier uploadé: ${filename}`);
+    logger.info(`File uploaded: ${req.file.filename}`);
 
     res.status(201).json({
       success: true,
-      message: 'Fichier uploadé avec succès',
+      message: 'Fichier uploade avec succes',
       data: {
-        id: fileId,
-        filename: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size,
+        id: path.parse(req.file.filename).name,
+        filename: req.file.originalname,
+        storedFilename: req.file.filename,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
         url: fileUrl,
       },
     });
   } catch (error) {
-    logger.error(`Erreur upload fichier: ${error.message}`);
+    logger.error(`Upload error: ${error.message}`);
     next(error);
   }
 };
 
-/**
- * Upload multiple files
- * @param {Object} req - Express request
- * @param {Object} res - Express response
- */
 exports.uploadMultiple = async (req, res, next) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Aucun fichier uploadé',
+        message: 'Aucun fichier uploade',
       });
     }
 
-    const uploadDir = path.join(__dirname, '../../../uploads', req.user.id);
+    const userId = String(req.user.id || req.user._id);
 
-    // Create user upload directory if it doesn't exist
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
+    const files = req.files.map((file) => ({
+      id: path.parse(file.filename).name,
+      filename: file.originalname,
+      storedFilename: file.filename,
+      mimetype: file.mimetype,
+      size: file.size,
+      url: toRelativeUploadUrl(userId, file.filename),
+    }));
 
-    const files = req.files.map((file) => {
-      const fileId = uuidv4();
-      const ext = path.extname(file.originalname);
-      const filename = `${fileId}${ext}`;
-      const filepath = path.join(uploadDir, filename);
-
-      fs.copyFileSync(file.path, filepath);
-      fs.unlinkSync(file.path);
-
-      return {
-        id: fileId,
-        filename: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size,
-        url: `/uploads/${req.user.id}/${filename}`,
-      };
+    await persistUploadUrl({
+      userId,
+      body: req.body,
+      urls: files.map((file) => file.url),
     });
 
-    logger.info(`✅ ${files.length} fichiers uploadés`);
+    logger.info(`${files.length} files uploaded`);
 
     res.status(201).json({
       success: true,
-      message: 'Fichiers uploadés avec succès',
+      message: 'Fichiers uploades avec succes',
       data: files,
     });
   } catch (error) {
-    logger.error(`Erreur upload fichiers: ${error.message}`);
+    logger.error(`Upload error: ${error.message}`);
     next(error);
   }
 };
 
-/**
- * Delete file
- * @param {Object} req - Express request
- * @param {Object} res - Express response
- */
 exports.deleteFile = async (req, res, next) => {
   try {
     const { fileId } = req.params;
-    const uploadDir = path.join(__dirname, '../../../uploads', req.user.id);
+    const uploadDir = getUserUploadDir(req.user.id || req.user._id);
 
-    // Find file with matching ID
+    if (!fs.existsSync(uploadDir)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fichier non trouve',
+      });
+    }
+
     const files = fs.readdirSync(uploadDir);
     const file = files.find((f) => f.startsWith(fileId));
 
     if (!file) {
       return res.status(404).json({
         success: false,
-        message: 'Fichier non trouvé',
+        message: 'Fichier non trouve',
       });
     }
 
     const filepath = path.join(uploadDir, file);
     fs.unlinkSync(filepath);
 
-    logger.info(`✅ Fichier supprimé: ${fileId}`);
+    logger.info(`File deleted: ${fileId}`);
 
     res.status(200).json({
       success: true,
-      message: 'Fichier supprimé',
+      message: 'Fichier supprime',
     });
   } catch (error) {
-    logger.error(`Erreur suppression fichier: ${error.message}`);
+    logger.error(`Delete error: ${error.message}`);
     next(error);
   }
 };
 
-/**
- * Get file info
- * @param {Object} req - Express request
- * @param {Object} res - Express response
- */
 exports.getFileInfo = async (req, res, next) => {
   try {
     const { fileId } = req.params;
-    const uploadDir = path.join(__dirname, '../../../uploads', req.user.id);
+    const userId = String(req.user.id || req.user._id);
+    const uploadDir = getUserUploadDir(userId);
 
-    // Find file with matching ID
+    if (!fs.existsSync(uploadDir)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fichier non trouve',
+      });
+    }
+
     const files = fs.readdirSync(uploadDir);
     const file = files.find((f) => f.startsWith(fileId));
 
     if (!file) {
       return res.status(404).json({
         success: false,
-        message: 'Fichier non trouvé',
+        message: 'Fichier non trouve',
       });
     }
 
@@ -169,18 +187,18 @@ exports.getFileInfo = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Info fichier récupérée',
+      message: 'Info fichier recuperee',
       data: {
         id: fileId,
         filename: file,
         size: stats.size,
         createdAt: stats.birthtime,
         modifiedAt: stats.mtime,
-        url: `/uploads/${req.user.id}/${file}`,
+        url: toRelativeUploadUrl(userId, file),
       },
     });
   } catch (error) {
-    logger.error(`Erreur récupération info fichier: ${error.message}`);
+    logger.error(`Get info error: ${error.message}`);
     next(error);
   }
 };

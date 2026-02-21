@@ -1,12 +1,5 @@
-# render.yaml - Configuration de déploiement Render (TEST GRATUIT)
-# Documentation: https://render.com/docs/blueprint-spec
-#
-# SERVICES GRATUITS À CONFIGURER :
-# 1. MongoDB Atlas : https://mongodb.com/atlas (gratuit M0)
-# 2. Upstash Redis : https://upstash.com (gratuit 10k req/jour)
-
+# render.yaml - Render deployment config
 services:
-  # API Node.js - GRATUIT
   - type: web
     name: jour-de-marche-api
     runtime: node
@@ -15,6 +8,10 @@ services:
     buildCommand: cd Jour_de_marche_api && npm ci
     startCommand: cd Jour_de_marche_api && npm start
     healthCheckPath: /health
+    disks:
+      - name: uploads
+        mountPath: /var/data
+        sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
@@ -28,10 +25,8 @@ services:
         value: 7d
       - key: JWT_REFRESH_EXPIRY
         value: 30d
-      # MongoDB Atlas - À CONFIGURER MANUELLEMENT
       - key: MONGODB_URI
         sync: false
-      # Upstash Redis - À CONFIGURER MANUELLEMENT  
       - key: REDIS_HOST
         sync: false
       - key: REDIS_PORT
@@ -44,9 +39,10 @@ services:
         value: "true"
       - key: BULL_REDIS_URL
         sync: false
-      # Configuration par défaut pour test
       - key: STORAGE_TYPE
         value: local
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
       - key: LOG_LEVEL
         value: info
       - key: LOG_FORMAT

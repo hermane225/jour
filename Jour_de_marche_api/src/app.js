@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 const config = require('../config');
 const logger = require('../config/logger');
 const { swaggerUi, swaggerSpec } = require('./docs/swagger');
@@ -17,10 +18,6 @@ const app = express();
 
 // Trust proxy for environments like Render
 app.set('trust proxy', 1);
-
-// =====================
-// Global Middlewares
-// =====================
 
 // Security headers
 app.use(helmet());
@@ -49,29 +46,26 @@ app.use(morgan('combined', {
 // Rate limiting
 app.use(rateLimiter);
 
-// =====================
 // Routes
-// Route racine
-const path = require('path');
-
-// Servir les fichiers uploadés (images logo, banner, etc.)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+const uploadDir = path.resolve(config.storage.path);
+app.use('/uploads', express.static(uploadDir, {
+  setHeaders: (res) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  },
+}));
 
 app.get('/', (req, res) => {
   res.status(200).json({ message: 'Bienvenue sur l\'API Jour de Marche !' });
 });
 
-// Route favicon.ico
 app.get('/favicon.ico', (req, res) => {
-  res.sendFile(path.join(__dirname, '../docs/favicon.ico'), err => {
+  res.sendFile(path.join(__dirname, '../docs/favicon.ico'), (err) => {
     if (err) {
-      res.status(204).end(); // No Content si le favicon n'existe pas
+      res.status(204).end();
     }
   });
 });
-// =====================
 
-// Health check
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -80,18 +74,15 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes
 app.use('/api', apiRoutes);
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route non trouvée',
+    message: 'Route non trouvee',
   });
 });
 
-// Error handling middleware
 app.use(errorMiddleware);
 
 module.exports = app;

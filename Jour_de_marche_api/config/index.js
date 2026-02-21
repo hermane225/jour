@@ -1,7 +1,9 @@
 const dotenv = require('dotenv');
 
-// Charger les variables d'environnement
+// Load environment variables
 dotenv.config();
+
+const uploadDir = process.env.UPLOAD_DIR || process.env.STORAGE_PATH || './uploads';
 
 const config = {
   // Server
@@ -22,7 +24,7 @@ const config = {
   // Redis
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT) || 6379,
+    port: parseInt(process.env.REDIS_PORT, 10) || 6379,
     password: process.env.REDIS_PASSWORD,
     db: 0,
     tls: process.env.REDIS_TLS === 'true',
@@ -64,7 +66,7 @@ const config = {
   // File Storage
   storage: {
     type: process.env.STORAGE_TYPE || 'local',
-    path: process.env.STORAGE_PATH || './uploads',
+    path: uploadDir,
     maxFileSize: process.env.MAX_FILE_SIZE || 52428800, // 50MB
   },
 
@@ -89,8 +91,8 @@ const config = {
 
   // Rate Limiting
   rateLimit: {
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes
-    maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 900000, // 15 minutes
+    maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS, 10) || 100,
   },
 
   // Bull Queue

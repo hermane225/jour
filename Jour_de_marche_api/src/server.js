@@ -1,4 +1,6 @@
 try {
+  const fs = require('fs');
+  const path = require('path');
   const app = require('./app');
   const config = require('../config');
   const logger = require('../config/logger');
@@ -7,40 +9,40 @@ try {
 
   const startServer = async () => {
     try {
-      console.log('🚀 Démarrage du serveur...');
-      
-      // Connect to databases (optionnel)
+      console.log('Starting server...');
+
+      const uploadDir = path.resolve(config.storage.path);
+      fs.mkdirSync(uploadDir, { recursive: true });
+      logger.info(`UPLOAD_DIR ready: ${uploadDir}`);
+
       try {
         await connectDB();
       } catch (dbError) {
-        console.warn('⚠️ Impossible de se connecter à MongoDB - mode standalone', dbError.message);
+        console.warn('Could not connect to MongoDB - standalone mode', dbError.message);
       }
 
-      // Redis is optional - only connect if enabled
       if (process.env.USE_REDIS !== 'false') {
         try {
           await connectRedis();
         } catch (redisError) {
-          console.warn('⚠️ Impossible de se connecter à Redis - Redis optionnel', redisError.message);
+          console.warn('Could not connect to Redis - optional service', redisError.message);
         }
       }
 
-      // Start HTTP server
       const server = app.listen(config.port, config.host, () => {
-        console.log(`✅ Serveur démarré sur http://${config.host}:${config.port}`);
-        console.log(`🔧 Environnement: ${config.nodeEnv}`);
+        console.log(`Server started on http://${config.host}:${config.port}`);
+        console.log(`Environment: ${config.nodeEnv}`);
       });
 
-      // Graceful shutdown
       const gracefulShutdown = async (signal) => {
-        console.log(`ℹ️ Signal ${signal} reçu, arrêt du serveur...`);
+        console.log(`Signal ${signal} received, shutting down...`);
         server.close(async () => {
-          console.log('✅ Serveur HTTP fermé');
+          console.log('HTTP server closed');
           process.exit(0);
         });
 
         setTimeout(() => {
-          console.error('❌ Impossible d\'arrêter le serveur gracieusement, arrêt forcé');
+          console.error('Forced shutdown after timeout');
           process.exit(1);
         }, 30000);
       };
@@ -49,16 +51,15 @@ try {
       process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
       process.on('unhandledRejection', (err) => {
-        console.error('❌ Unhandled Rejection:', err);
+        console.error('Unhandled Rejection:', err);
       });
 
       process.on('uncaughtException', (err) => {
-        console.error('❌ Uncaught Exception:', err);
+        console.error('Uncaught Exception:', err);
         process.exit(1);
       });
-
     } catch (error) {
-      console.error('❌ Erreur au démarrage:', error.message);
+      console.error('Startup error:', error.message);
       console.error(error);
       process.exit(1);
     }
@@ -66,7 +67,7 @@ try {
 
   startServer();
 } catch (error) {
-  console.error('❌ ERREUR CRITIQUE:', error.message);
+  console.error('Critical startup error:', error.message);
   console.error(error);
   process.exit(1);
 }

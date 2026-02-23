@@ -4,10 +4,13 @@ const { body } = require('express-validator');
  * Validation rules for order creation
  */
 exports.create = [
+  body('shopId')
+    .isMongoId()
+    .withMessage('ID boutique invalide'),
   body('items')
     .isArray({ min: 1 })
     .withMessage('Au moins un produit est requis'),
-  body('items.*.productId')
+  body('items.*.product')
     .isMongoId()
     .withMessage('ID produit invalide'),
   body('items.*.quantity')
@@ -16,7 +19,12 @@ exports.create = [
   body('items.*.price')
     .isFloat({ min: 0.01 })
     .withMessage('Prix invalide'),
+  body('deliveryType')
+    .optional()
+    .isIn(['delivery', 'pickup'])
+    .withMessage('Type de livraison invalide (delivery ou pickup)'),
   body('deliveryAddress')
+    .optional()
     .isString()
     .trim()
     .isLength({ min: 10 })
@@ -34,9 +42,19 @@ exports.create = [
 
 /**
  * Validation rules for order status update
+ * Status flow: pending -> confirmed -> preparing -> ready_for_pickup (if pickup) OR in_delivery (if delivery) -> delivered -> cancelled
  */
 exports.updateStatus = [
   body('status')
-    .isIn(['pending', 'confirmed', 'preparing', 'ready', 'on_delivery', 'delivered', 'cancelled'])
+    .isIn([
+      'pending',
+      'confirmed',
+      'preparing',
+      'ready_for_pickup',
+      'in_delivery',
+      'delivered',
+      'cancelled',
+      'refunded'
+    ])
     .withMessage('Statut invalide'),
 ];

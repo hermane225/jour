@@ -20,6 +20,7 @@ router.use('/categories', require('./categories/categories.routes'));
 router.use('/products', require('./products/products.routes'));
 router.use('/carts', require('./carts/carts.routes'));
 router.use('/orders', require('./orders/orders.routes'));
+router.use('/notifications', require('./notifications/notifications.routes'));
 router.use('/payments', require('./payments/payments.routes'));
 router.use('/drivers', require('./drivers/drivers.routes'));
 router.use('/uploads', require('./uploads/uploads.routes'));

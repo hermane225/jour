@@ -1,17 +1,27 @@
-# TODO - Order & Notification System Implementation
+# Déploiement VPS - Checklist
 
-## Phase 1: Model Updates
-- [x] 1.1 Update Order Model - Add deliveryType, update status enum, add orderNumber
-- [x] 1.2 Create Notification Model
+## ✅ Plan approuvé par l'utilisateur
 
-## Phase 2: Controller Updates
-- [x] 2.1 Update Orders Controller with notifications and timeline
+### Phase 1: Préparation fichiers (local) ✅
+- [x] Créer `scripts/fix-vps-deploy.sh`
+- [x] Mettre à jour `infra/nginx/vps.conf` (server_name = jour.marche.blueredc.com)
+- [ ] Vérifier `.env.production` existe
 
-## Phase 3: Routes Updates
-- [x] 3.1 Update Orders Routes - Add shop and buyer endpoints
+### Phase 2: Exécution VPS (root@my-vps) ← **PROCHAIN**
+```
+cd ~/jour/Jour_de_marche_api
+chmod +x scripts/fix-vps-deploy.sh
+./scripts/fix-vps-deploy.sh
+```
 
-## Phase 4: Validator Updates
-- [x] 4.1 Update Orders Validator - Add new status values
+### Phase 3: Vérification
+- [ ] `pm2 status` → jour-de-marche-api online
+- [ ] `curl localhost:5000/health` → OK
+- [ ] `curl http://jour.marche.blueredc.com/health` → OK
+- [ ] Logs PM2/nginx clean
 
-## Phase 5: Notification Service Updates
-- [x] 5.1 Create Notifications API - controller and routes added
+### Phase 4: Bonus
+- [ ] SSL avec `certbot --nginx`
+- [ ] Git remote setup pour futurs déploiements
+
+**Status: ✅ Prêt pour VPS - Phase 2**

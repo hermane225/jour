@@ -1,7 +1,17 @@
 const dotenv = require('dotenv');
+const path = require('path');
+const fs = require('fs');
 
-// Load environment variables
-dotenv.config();
+// Charge .env.{NODE_ENV} s'il existe, puis .env en fallback
+const nodeEnv = process.env.NODE_ENV || 'development';
+const envSpecific = path.resolve(process.cwd(), `.env.${nodeEnv}`);
+const envDefault  = path.resolve(process.cwd(), '.env');
+
+if (fs.existsSync(envSpecific)) {
+  dotenv.config({ path: envSpecific });
+} else {
+  dotenv.config({ path: envDefault });
+}
 
 const uploadDir = process.env.UPLOAD_DIR || process.env.STORAGE_PATH || './uploads';
 

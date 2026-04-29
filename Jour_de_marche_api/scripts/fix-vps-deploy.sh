@@ -39,7 +39,8 @@ if [ -d "$APP_DIR" ]; then
     mv "$APP_DIR" "$APP_DIR.backup.$(date +%Y%m%d_%H%M%S)"
 fi
 mkdir -p "$APP_DIR"
-rsync -av --exclude='scripts/fix-vps-deploy.sh' . "$APP_DIR/"
+cp -rf . "$APP_DIR/"
+rm -f "$APP_DIR/scripts/fix-vps-deploy.sh"  # Évite récursion
 cd "$APP_DIR"
 echo "✅ Code déplacé"
 

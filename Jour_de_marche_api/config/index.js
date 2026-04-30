@@ -14,6 +14,11 @@ if (fs.existsSync(envSpecific)) {
 }
 
 const uploadDir = process.env.UPLOAD_DIR || process.env.STORAGE_PATH || './uploads';
+const rawCorsOrigins = process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001';
+const corsOrigins = rawCorsOrigins
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 const config = {
   // Server
@@ -96,7 +101,8 @@ const config = {
 
   // CORS
   cors: {
-    origins: (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001').split(','),
+    origins: corsOrigins,
+    allowAllOrigins: corsOrigins.includes('*'),
   },
 
   // Rate Limiting

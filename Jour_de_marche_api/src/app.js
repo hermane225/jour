@@ -23,11 +23,14 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // CORS
-app.use(cors({
-  origin: config.cors.origins,
+const corsOptions = {
+  origin: config.cors.allowAllOrigins ? true : config.cors.origins,
   credentials: false,
   optionsSuccessStatus: 200,
-}));
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Swagger documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

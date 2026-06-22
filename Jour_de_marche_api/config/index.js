@@ -14,7 +14,7 @@ if (fs.existsSync(envSpecific)) {
 }
 
 const uploadDir = process.env.UPLOAD_DIR || process.env.STORAGE_PATH || './uploads';
-const rawCorsOrigins = process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001';
+const rawCorsOrigins = process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001 ,https://jour-marche.vercel.app';
 const corsOrigins = rawCorsOrigins
   .split(',')
   .map((origin) => origin.trim())
